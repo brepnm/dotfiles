@@ -201,11 +201,18 @@ open_file() {
 create_directory() {
     read -p "Enter directory name: " directory_name
     
-    #if directory_name exists or is empty, prompt again
-    if [ -z "$directory_name" ] || [ -d "$directory_name" ]; then
-        echo "Invalid or existing directory name."
-        return 1
-    fi
+    #if directory_name exists or is empty, enter while loop until valid name is given
+    while [ -z "$directory_name" ] || [ -d "$directory_name" ];
+    do
+        echo "Invalid or existing directory name. Please try again."
+        read -p "Enter directory name: " directory_name
+    done
+    
+    
+    # if [ -z "$directory_name" ] || [ -d "$directory_name" ]; then
+    #     echo "Invalid or existing directory name."
+    #     return 1
+    # fi
     
     mkdir "$directory_name"
     cd "$directory_name" || return 1
