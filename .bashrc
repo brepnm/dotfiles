@@ -100,11 +100,15 @@ bind 'set bell-style none'
 #    . /etc/bash_completion
 #fi
 
-# Configuration variables with defaults
-# MEDIA_OPENER="wslview"
-TEXT_EDITOR="nvim"
-LIST_COMMAND="eza"
-PREVIEW_COMMAND="batcat"
+
+
+TEXT_EDITOR="${FZFM_TEXT_EDITOR:-nvim}"
+LIST_COMMAND="${FZFM_LIST_COMMAND:-eza}"
+PREVIEW_COMMAND="${FZFM_PREVIEW_COMMAND:-batcat}"
+MEDIA_OPENER="${FZFM_MEDIA_OPENER:-}"
+
+# Stack to remember navigation for cursor memory
+declare -a DIR_STACK=()
 
 # Function to check if a command exists
 command_exists() {
@@ -113,56 +117,42 @@ command_exists() {
 
 # Check and set up dependencies
 setup_dependencies() {
-    # Check for fzf as it's required
     if ! command_exists "fzf"; then
-        # echo "Error: fzf is required but not installed"
         exit 1
     fi
 
-    # Check and set list command (eza or ls)
     if ! command_exists "$LIST_COMMAND"; then
-        # echo "Warning: $LIST_COMMAND not found, falling back to ls"
         LIST_COMMAND="ls"
-        LIST_ARGS="-1A --color=always"  # ls arguments
+        LIST_ARGS="-1A --color=always"
     else
-        LIST_ARGS="-1a --icons --color=always"  # eza arguments
+        LIST_ARGS="-1a --icons --color=always"
     fi
 
-    # Check and set preview command
     if ! command_exists "$PREVIEW_COMMAND"; then
-        # echo "Warning: $PREVIEW_COMMAND not found, falling back to cat"
         PREVIEW_COMMAND="cat"
     fi
 
-    # Check and set text editor
     if ! command_exists "$TEXT_EDITOR"; then
-        # echo "Warning: $TEXT_EDITOR not found, falling back to nano"
-        command_exists "nano" && TEXT_EDITOR="nano" || {
-            # echo "Error: No suitable text editor found"
-            exit 1
-        }
+        command_exists "nano" && TEXT_EDITOR="nano" || exit 1
     fi
 
-    # Check and set media opener
-    if ! command_exists "$MEDIA_OPENER"; then
+    if [[ -z "$MEDIA_OPENER" ]]; then
         if command_exists "xdg-open"; then
-            # echo "Warning: $MEDIA_OPENER not found, falling back to xdg-open"
             MEDIA_OPENER="xdg-open"
         elif command_exists "open"; then
-            # echo "Warning: $MEDIA_OPENER not found, falling back to open"
             MEDIA_OPENER="open"
         else
-            # echo "Warning: No suitable media opener found, multimedia files won't be opened"
             MEDIA_OPENER=""
         fi
     fi
 }
 
-# Check and open file based on mime type
+# Open file based on MIME type
 open_file() {
     local file="$1"
-    local mime_type=$(file --mime-type -b "$file")
-   
+    local mime_type
+    mime_type=$(file --mime-type -b "$file")
+
     case "$mime_type" in
         text/*|application/json|application/xml|application/javascript|application/x-shellscript)
             $TEXT_EDITOR "$file"
@@ -196,31 +186,50 @@ open_file() {
     esac
 }
 
-# Main function
+# Main fzfm function
 fzfm() {
     local return_path=0
+    local previous_selection=""
     
-    # Parse parameters
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -p|--path) return_path=1; shift ;;
             *) shift ;;
         esac
     done
-    
-    setup_dependencies
 
+    setup_dependencies
     local list_command="$LIST_COMMAND $LIST_ARGS"
 
     while true; do
-        # Add :get_path option if -p flag is set
+        # Prepare fzf input
         local fzf_input
         if [ $return_path -eq 1 ]; then
             fzf_input=$(echo -e "..\n:get_path"; eval "$list_command")
         else
             fzf_input=$(echo ".."; eval "$list_command")
         fi
-        
+
+        # Determine index to preselect cursor if going back
+        local start_pos=""
+        if [[ "${#DIR_STACK[@]}" -gt 0 && "$previous_selection" == ".." ]]; then
+            local parent_dir=$(pwd)
+            local prev_dir="${DIR_STACK[-1]}"
+            # Get the index of prev_dir in the list
+            local items
+            mapfile -t items < <(eval "$list_command" "$parent_dir")
+            for i in "${!items[@]}"; do
+                # Remove color codes for comparison
+                local clean_item
+                clean_item=$(echo "${items[$i]}" | sed 's/\x1b\[[0-9;]*m//g')
+                if [[ "$clean_item" == "$prev_dir" ]]; then
+                    start_pos="$i"
+                    break
+                fi
+            done
+        fi
+
+        # Run fzf
         selection=$(echo "$fzf_input" | fzf \
             --ansi \
             --reverse \
@@ -243,6 +252,7 @@ fzfm() {
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
             --bind "alt-e:accept" \
+            $( [[ -n "$start_pos" ]] && echo "--bind start:pos:$start_pos" ) \
             --preview-window="right:65%" \
             --preview "
                 file={}
@@ -264,16 +274,20 @@ fzfm() {
         [[ -z "$selection" ]] && break
 
         if [[ "$selection" == ".." ]]; then
+            previous_selection=".."
+            if [[ "${#DIR_STACK[@]}" -gt 0 ]]; then
+                unset 'DIR_STACK[-1]'
+            fi
             cd .. || break
         elif [[ "$selection" == ":get_path" ]]; then
-            # Return current directory path
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
+            previous_selection="$selection"
+            DIR_STACK+=("$selection")
             cd "$selection" || break
         elif [[ -f "$selection" ]]; then
             if [ $return_path -eq 1 ]; then
-                # Return file path
                 echo "$(pwd)/$selection"
                 break
             else
@@ -285,11 +299,6 @@ fzfm() {
     done
 }
 
-# Allow configuration through environment variables
-[[ -n "$FZFM_MEDIA_OPENER" ]] && MEDIA_OPENER="$FZFM_MEDIA_OPENER"
-[[ -n "$FZFM_TEXT_EDITOR" ]] && TEXT_EDITOR="$FZFM_TEXT_EDITOR"
-[[ -n "$FZFM_LIST_COMMAND" ]] && LIST_COMMAND="$FZFM_LIST_COMMAND"
-[[ -n "$FZFM_PREVIEW_COMMAND" ]] && PREVIEW_COMMAND="$FZFM_PREVIEW_COMMAND"
 
 
 test() {
