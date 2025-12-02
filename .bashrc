@@ -229,21 +229,24 @@ fzfm() {
         # BUILD FZF POSITION BIND ONLY IF MOVING BACK AND HAVE PREVIOUS DIR
         local pos_bind=""
         if [ "$moving_back" = true ] && [ -n "$previous_dir_name" ]; then
-            # Find the index of previous_dir_name in fzf_input
+            # Get the list without .. and :get_path
+            local dir_list=$(eval "$list_command")
+            
+            # Find the index of previous_dir_name in the actual list
             local index=0
             while IFS= read -r line; do
-                # Remove any formatting characters for comparison
-                local clean_line="${line//[^a-zA-Z0-9._-]/}"
-                local clean_prev="${previous_dir_name//[^a-zA-Z0-9._-]/}"
+                # Remove ANSI escape codes and any non-filename characters
+                local clean_line=$(echo "$line" | sed 's/\x1b\[[0-9;]*m//g' | tr -cd '[:alnum:]._-')
+                local clean_prev=$(echo "$previous_dir_name" | tr -cd '[:alnum:]._-')
                 
                 if [[ "$clean_line" == "$clean_prev" ]]; then
-                    pos_bind="--bind=start:pos($index)"
+                    # Add 1 to account for ".." at the top
+                    pos_bind="--bind=start:pos($((index + 1)))"
                     break
                 fi
                 ((index++))
-            done <<< "$fzf_input"
+            done <<< "$dir_list"
             
-            # Reset flag after applying
             moving_back=false
         fi
         
