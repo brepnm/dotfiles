@@ -219,39 +219,29 @@ copy_files_from_temp() {
     if [[ -f "$temp_file" ]]; then
         while IFS= read -r filepath; do
             if [[ -f "$filepath" || -d "$filepath" ]]; then
-                local basename=$(basename "$filepath")
-                
-                if [[ -e "$basename" ]]; then
-                    if [[ -d "$filepath" ]]; then
-                        # For directories
-                        local i=1
-                        while [[ -e "${basename}_$i" ]]; do
-                            ((i++))
-                        done
-                        local target="${basename}_$i"
+                local filename=$(basename "$filepath")
+                local destfile="$filename"
+
+                if [[ -e "$destfile" ]]; then
+                    local basename="${filename%.*}"
+                    local extension="${filename##*.}"
+                    if [[ "$filename" == "$extension" ]]; then
+                        extension=""
                     else
-                        # For files
-                        local name="${basename%.*}"
-                        local ext="${basename##*.}"
-                        if [[ "$basename" == "$ext" ]]; then
-                            name="$basename"
-                            ext=""
-                        fi
-                        
-                        local i=1
-                        while [[ -e "${name}_${i}${ext:+.$ext}" ]]; do
-                            ((i++))
-                        done
-                        local target="${name}_${i}${ext:+.$ext}"
+                        extension=".$extension"
                     fi
-                else
-                    local target="$basename"
+                    
+                    local i=1
+                    while [[ -e "${basename}_${i}${extension}" ]]; do
+                        ((i++))
+                    done
+                    destfile="${basename}_${i}${extension}"
                 fi
 
                 if [[ -f "$filepath" ]]; then
-                    cp "$filepath" "$target"
+                    cp "$filepath" "$destfile"
                 elif [[ -d "$filepath" ]]; then
-                    cp -r "$filepath" "$target"
+                    cp -r "$filepath" "$destfile"
                 fi
             fi
         done < "$temp_file"
