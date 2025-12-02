@@ -69,6 +69,7 @@ esac
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
+    alias cls="clear"
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
 
@@ -274,13 +275,13 @@ fzfm() {
             --preview "
                 file={}
                 if [[ \"\$file\" == \"..\" ]]; then
-                    echo \"󱧰 Move up to parent directory\"
+                    echo \"Move up to parent directory\"
                 elif [[ -d \"\$file\" ]]; then
-                    echo \"󰉋 Folder: \$file\"
+                    echo \"Folder: \$file\"
                     echo \"\"
                     $list_command \"\$file\" 2>/dev/null
                 elif [[ -f \"\$file\" ]]; then
-                    echo \"󰈙 File: \$file\"
+                    echo \"File: \$file\"
                     echo \"\"
                     $PREVIEW_COMMAND --style=numbers --color=always --line-range :500 \"\$file\" 2>/dev/null || cat \"\$file\"
                 else
