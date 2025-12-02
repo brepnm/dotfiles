@@ -336,6 +336,7 @@ fzfm() {
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
+            echo "Entering directory: $selection"
             previous_dir_name=""
             moving_back=false
             cd "$selection" || break
