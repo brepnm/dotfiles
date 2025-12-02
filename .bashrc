@@ -298,7 +298,6 @@ fzfm() {
             --bind "enter:accept" \
             --bind "shift-up:preview-up" \
             --bind "shift-down:preview-down" \
-            --bind "ctrl-r:reload($list_command)" \
             --bind "alt-w:up" \
             --bind "alt-s:down" \
             --bind "alt-d:accept" \
@@ -306,7 +305,7 @@ fzfm() {
             --bind "ctrl-n:execute(create_directory {})+reload($list_command)" \
             --bind "alt-x:execute-silent(gio trash {})+reload($list_command)" \
             --bind "change:top" \
-            --bind "ctrl-x:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)+abort" \
+            --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)" \
             --bind "ctrl-r:execute(copy_files_from_temp)+reload($list_command)" \
             --preview-window="right:65%" \
             --preview "
