@@ -284,7 +284,7 @@ fzfm() {
             --bind "alt-s:down" \
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
-            --bind "ctrl-n:change-query(create_directory)" \
+            --bind "ctrl-n:change-query(create_directory)+print-query" \
             --preview-window="right:65%" \
             --preview "
                 file={}
