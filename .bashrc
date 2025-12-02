@@ -221,7 +221,21 @@ fzfm() {
             fzf_input=$(echo ".."; eval "$list_command")
         fi
         
-        selection=$(echo "$fzf_input" | fzf \
+        # Calculate position if returning from a subdirectory
+        local fzf_pos_bind=""
+        if [ -n "$FZFM_PREV_DIR" ]; then
+            # Find index of previous directory in the list
+            local index=0
+            while IFS= read -r line; do
+                if [[ "$line" == "$FZFM_PREV_DIR" ]]; then
+                    fzf_pos_bind="--bind 'start:pos($index)'"
+                    break
+                fi
+                ((index++))
+            done <<< "$fzf_input"
+        fi
+        
+        selection=$(echo "$fzf_input" | eval "fzf $fzf_pos_bind" \
             --ansi \
             --reverse \
             --height 100% \
@@ -264,12 +278,16 @@ fzfm() {
         [[ -z "$selection" ]] && break
 
         if [[ "$selection" == ".." ]]; then
+            # Store current directory name before going back
+            FZFM_PREV_DIR=$(basename "$(pwd)")
             cd .. || break
         elif [[ "$selection" == ":get_path" ]]; then
             # Return current directory path
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
+            # Clear previous directory when going forward
+            FZFM_PREV_DIR=""
             cd "$selection" || break
         elif [[ -f "$selection" ]]; then
             if [ $return_path -eq 1 ]; then
