@@ -208,12 +208,6 @@ create_directory() {
         read -p "Enter directory name: " directory_name
     done
     
-    
-    # if [ -z "$directory_name" ] || [ -d "$directory_name" ]; then
-    #     echo "Invalid or existing directory name."
-    #     return 1
-    # fi
-    
     mkdir "$directory_name"
     cd "$directory_name" || return 1
 }
@@ -290,7 +284,7 @@ fzfm() {
             --bind "alt-s:down" \
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
-            --bind "ctrl-n:change-query(create_directory)+print-query" \
+            --bind "ctrl-n:transform-query(echo 'create_directory')+print-query" \
             --preview-window="right:65%" \
             --preview "
                 file={}
