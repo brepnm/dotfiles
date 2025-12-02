@@ -261,3 +261,7 @@ fzfm() {
 [[ -n "$FZFM_TEXT_EDITOR" ]] && TEXT_EDITOR="$FZFM_TEXT_EDITOR"
 [[ -n "$FZFM_LIST_COMMAND" ]] && LIST_COMMAND="$FZFM_LIST_COMMAND"
 [[ -n "$FZFM_PREVIEW_COMMAND" ]] && PREVIEW_COMMAND="$FZFM_PREVIEW_COMMAND"
+
+
+# bind alt-f to launch fzfm
+bind '"\ef":"\C-a fzfm\n"'
