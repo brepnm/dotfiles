@@ -227,7 +227,7 @@ copy_files_from_temp() {
             fi
         done < "$temp_file"
         rm "$temp_file"
-        echo "Files copied to current directory"
+        # echo "Files copied to current directory"
     fi
 }
 export -f copy_files_from_temp
