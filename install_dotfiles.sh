@@ -78,7 +78,7 @@ if [ -L "$BASHRC_DEST" ]; then
 fi
 
 echo "[+] Creating symlink: $BASHRC_DEST → $BASHRC_SRC"
-ln -s "$BASHRC_SRC" "$BASHRC_DEST"
+ln -s "$(cd "$(dirname "$BASHRC_SRC")" && pwd)/$(basename "$BASHRC_SRC")" "$BASHRC_DEST"
 
 
 ### ===========================
