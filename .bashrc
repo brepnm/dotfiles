@@ -93,17 +93,6 @@ fi
 
 bind 'set bell-style none'
 
-# Bind Ctrl-R to fzfm
-fzfm-history-widget() {
-    # Run your custom fzfm command and put the result in the command line
-    local selected
-    selected=$(history | fzfm | sed 's/ *[0-9]* *//') || return
-    READLINE_LINE="$selected"
-    READLINE_POINT=${#READLINE_LINE}
-}
-
-bind -x '"\C-r": fzfm-history-widget'
-
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
