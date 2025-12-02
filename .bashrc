@@ -264,5 +264,6 @@ fzfm() {
 [[ -n "$FZFM_PREVIEW_COMMAND" ]] && PREVIEW_COMMAND="$FZFM_PREVIEW_COMMAND"
 
 
-# bind alt-f to launch fzfm
-bind '"\ef":"\C-a fzfm\n"'
+test() {
+    echo "testing123"
+}
