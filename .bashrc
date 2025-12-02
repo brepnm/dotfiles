@@ -246,10 +246,45 @@ copy_files_from_temp() {
                 fi
             fi
         done < "$temp_file"
-        # rm "$temp_file"
     fi
 }
 export -f copy_files_from_temp
+
+
+move_files_from_temp() {
+    local temp_file="/tmp/fzfm_clipboard.txt"
+    if [[ -f "$temp_file" ]]; then
+        while IFS= read -r filepath; do
+            if [[ -f "$filepath" || -d "$filepath" ]]; then
+                local filename=$(basename "$filepath")
+                local basename="${filename%.*}"
+                local extension="${filename##*.}"
+                if [[ "$filename" == "$extension" ]]; then
+                    extension=""
+                else
+                    extension=".$extension"
+                fi
+
+                # If original file exists, start with _1
+                if [[ -e "$filename" ]]; then
+                    local i=1
+                    while [[ -e "${basename}_${i}${extension}" ]]; do
+                        ((i++))
+                    done
+                    local destfile="${basename}_${i}${extension}"
+                else
+                    local destfile="$filename"
+                fi
+
+                if [[ -f "$filepath" || -d "$filepath" ]]; then
+                    mv "$filepath" "$destfile"
+                fi
+            fi
+        done < "$temp_file"
+    fi
+}
+export -f move_files_from_temp
+
 
 
 fzfm() {
@@ -326,6 +361,7 @@ fzfm() {
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
             --bind "ctrl-r:execute(copy_files_from_temp)+reload($list_command)+refresh-preview" \
+            --bind "ctrl-x:execute(move_files_from_temp)+reload($list_command)+refresh-preview" \
             --preview-window="right:65%" \
             --preview "
                 file={}
