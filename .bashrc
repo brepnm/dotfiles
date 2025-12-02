@@ -222,20 +222,20 @@ fzfm() {
         fi
         
         # Calculate position if returning from a subdirectory
-        local fzf_pos_bind=""
+        local fzf_options=""
         if [ -n "$FZFM_PREV_DIR" ]; then
             # Find index of previous directory in the list
             local index=0
             while IFS= read -r line; do
                 if [[ "$line" == "$FZFM_PREV_DIR" ]]; then
-                    fzf_pos_bind="--bind 'start:pos($index)'"
+                    fzf_options="--bind 'start:pos($index)'"
                     break
                 fi
                 ((index++))
             done <<< "$fzf_input"
         fi
         
-        selection=$(echo "$fzf_input" | eval "fzf $fzf_pos_bind" \
+        selection=$(echo "$fzf_input" | fzf $fzf_options \
             --ansi \
             --reverse \
             --height 100% \
