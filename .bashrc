@@ -256,7 +256,7 @@ fzfm() {
                 
                 if [[ "$clean_line" == "$clean_prev" ]]; then
                     # Add 1 to account for ".." at the top
-                    pos_bind="--bind=start:pos($((index+2)))"
+                    pos_bind="--bind=start:pos($((index+1)))"
                     break
                 fi
                 ((index++))
