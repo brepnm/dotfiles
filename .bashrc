@@ -197,7 +197,31 @@ open_file() {
     esac
 }
 
-previous_location=''
+
+create_directory() {
+    read -p "Enter directory name: " directory_name
+    if [ -d "$directory_name" ]; then
+        echo "Directory '$directory_name' already exists."
+        return 1
+    fi
+    mkdir "$directory_name"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Main function
