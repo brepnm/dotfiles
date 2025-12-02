@@ -100,8 +100,6 @@ bind 'set bell-style none'
 #    . /etc/bash_completion
 #fi
 
-
-
 TEXT_EDITOR="${FZFM_TEXT_EDITOR:-nvim}"
 LIST_COMMAND="${FZFM_LIST_COMMAND:-eza}"
 PREVIEW_COMMAND="${FZFM_PREVIEW_COMMAND:-batcat}"
@@ -110,16 +108,14 @@ MEDIA_OPENER="${FZFM_MEDIA_OPENER:-}"
 # Stack to remember navigation for cursor memory
 declare -a DIR_STACK=()
 
-# Function to check if a command exists
+# Check if a command exists
 command_exists() {
-    command -v "$1" &> /dev/null
+    command -v "$1" &>/dev/null
 }
 
-# Check and set up dependencies
+# Setup dependencies
 setup_dependencies() {
-    if ! command_exists "fzf"; then
-        exit 1
-    fi
+    if ! command_exists "fzf"; then exit 1; fi
 
     if ! command_exists "$LIST_COMMAND"; then
         LIST_COMMAND="ls"
@@ -173,10 +169,7 @@ open_file() {
                 clear
             else
                 if [[ -n "$MEDIA_OPENER" ]]; then
-                    $MEDIA_OPENER "$file" &>/dev/null || {
-                        $TEXT_EDITOR "$file"
-                        clear
-                    }
+                    $MEDIA_OPENER "$file" &>/dev/null || { $TEXT_EDITOR "$file"; clear; }
                 else
                     $TEXT_EDITOR "$file"
                     clear
@@ -190,7 +183,7 @@ open_file() {
 fzfm() {
     local return_path=0
     local previous_selection=""
-    
+
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -p|--path) return_path=1; shift ;;
@@ -202,26 +195,25 @@ fzfm() {
     local list_command="$LIST_COMMAND $LIST_ARGS"
 
     while true; do
-        # Prepare fzf input
-        local fzf_input
+        # Prepare fzf list
+        local fzf_items
         if [ $return_path -eq 1 ]; then
-            fzf_input=$(echo -e "..\n:get_path"; eval "$list_command")
+            fzf_items=$(echo -e "..\n:get_path"; eval "$list_command")
         else
-            fzf_input=$(echo ".."; eval "$list_command")
+            fzf_items=$(echo ".."; eval "$list_command")
         fi
 
-        # Determine index to preselect cursor if going back
+        # Convert to array for indexing
+        mapfile -t items_array < <(echo "$fzf_items")
+
+        # Compute cursor index if going back
         local start_pos=""
         if [[ "${#DIR_STACK[@]}" -gt 0 && "$previous_selection" == ".." ]]; then
-            local parent_dir=$(pwd)
             local prev_dir="${DIR_STACK[-1]}"
-            # Get the index of prev_dir in the list
-            local items
-            mapfile -t items < <(eval "$list_command" "$parent_dir")
-            for i in "${!items[@]}"; do
-                # Remove color codes for comparison
+            for i in "${!items_array[@]}"; do
+                # Strip ANSI color codes for comparison
                 local clean_item
-                clean_item=$(echo "${items[$i]}" | sed 's/\x1b\[[0-9;]*m//g')
+                clean_item=$(echo "${items_array[$i]}" | sed 's/\x1b\[[0-9;]*m//g')
                 if [[ "$clean_item" == "$prev_dir" ]]; then
                     start_pos="$i"
                     break
@@ -229,47 +221,59 @@ fzfm() {
             done
         fi
 
-        # Run fzf
-        selection=$(echo "$fzf_input" | fzf \
-            --ansi \
-            --reverse \
-            --height 100% \
-            --info right \
-            --prompt "󰥨 Search: " \
-            --pointer ">" \
-            --marker "󰄲" \
-            --border "rounded" \
-            --border-label=" 󱉭 $(pwd)/ " \
-            --border-label-pos center \
-            --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
-            --bind "right:accept" \
-            --bind "enter:accept" \
-            --bind "shift-up:preview-up" \
-            --bind "shift-down:preview-down" \
-            --bind "ctrl-r:reload($list_command)" \
-            --bind "alt-w:up" \
-            --bind "alt-s:down" \
-            --bind "alt-d:accept" \
-            --bind "alt-a:change-query(..)+print-query" \
-            --bind "alt-e:accept" \
-            $( [[ -n "$start_pos" ]] && echo "--bind start:pos:$start_pos" ) \
-            --preview-window="right:65%" \
-            --preview "
-                file={}
-                if [[ \"\$file\" == \"..\" ]]; then
-                    echo \"󱧰 Move up to parent directory\"
-                elif [[ -d \"\$file\" ]]; then
-                    echo \"󰉋 Folder: \$file\"
-                    echo \"\"
-                    $list_command \"\$file\" 2>/dev/null
-                elif [[ -f \"\$file\" ]]; then
-                    echo \"󰈙 File: \$file\"
-                    echo \"\"
-                    $PREVIEW_COMMAND --style=numbers --color=always --line-range :500 \"\$file\" 2>/dev/null || cat \"\$file\"
-                else
-                    echo \"Invalid selection: \$file\"
-                fi
-            ")
+        # Run fzf with optional start position
+        if [[ -n "$start_pos" ]]; then
+            selection=$(printf "%s\n" "${items_array[@]}" | fzf \
+                --ansi --reverse --height 100% --info right \
+                --prompt "󰥨 Search: " --pointer ">" --marker "󰄲" \
+                --border "rounded" --border-label=" 󱉭 $(pwd)/ " \
+                --border-label-pos center \
+                --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
+                --bind "right:accept,enter:accept,shift-up:preview-up,shift-down:preview-down,ctrl-r:reload($list_command),alt-w:up,alt-s:down,alt-d:accept,alt-a:change-query(..)+print-query,alt-e:accept" \
+                --bind "start:pos:$start_pos" \
+                --preview-window="right:65%" \
+                --preview "
+                    file={}
+                    if [[ \"\$file\" == \"..\" ]]; then
+                        echo \"󱧰 Move up to parent directory\"
+                    elif [[ -d \"\$file\" ]]; then
+                        echo \"󰉋 Folder: \$file\"
+                        echo \"\"
+                        $list_command \"\$file\" 2>/dev/null
+                    elif [[ -f \"\$file\" ]]; then
+                        echo \"󰈙 File: \$file\"
+                        echo \"\"
+                        $PREVIEW_COMMAND --style=numbers --color=always --line-range :500 \"\$file\" 2>/dev/null || cat \"\$file\"
+                    else
+                        echo \"Invalid selection: \$file\"
+                    fi
+                ")
+        else
+            selection=$(printf "%s\n" "${items_array[@]}" | fzf \
+                --ansi --reverse --height 100% --info right \
+                --prompt "󰥨 Search: " --pointer ">" --marker "󰄲" \
+                --border "rounded" --border-label=" 󱉭 $(pwd)/ " \
+                --border-label-pos center \
+                --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
+                --bind "right:accept,enter:accept,shift-up:preview-up,shift-down:preview-down,ctrl-r:reload($list_command),alt-w:up,alt-s:down,alt-d:accept,alt-a:change-query(..)+print-query,alt-e:accept" \
+                --preview-window="right:65%" \
+                --preview "
+                    file={}
+                    if [[ \"\$file\" == \"..\" ]]; then
+                        echo \"󱧰 Move up to parent directory\"
+                    elif [[ -d \"\$file\" ]]; then
+                        echo \"󰉋 Folder: \$file\"
+                        echo \"\"
+                        $list_command \"\$file\" 2>/dev/null
+                    elif [[ -f \"\$file\" ]]; then
+                        echo \"󰈙 File: \$file\"
+                        echo \"\"
+                        $PREVIEW_COMMAND --style=numbers --color=always --line-range :500 \"\$file\" 2>/dev/null || cat \"\$file\"
+                    else
+                        echo \"Invalid selection: \$file\"
+                    fi
+                ")
+        fi
 
         [[ -z "$selection" ]] && break
 
@@ -299,6 +303,12 @@ fzfm() {
     done
 }
 
+
+# Allow configuration through environment variables
+[[ -n "$FZFM_MEDIA_OPENER" ]] && MEDIA_OPENER="$FZFM_MEDIA_OPENER"
+[[ -n "$FZFM_TEXT_EDITOR" ]] && TEXT_EDITOR="$FZFM_TEXT_EDITOR"
+[[ -n "$FZFM_LIST_COMMAND" ]] && LIST_COMMAND="$FZFM_LIST_COMMAND"
+[[ -n "$FZFM_PREVIEW_COMMAND" ]] && PREVIEW_COMMAND="$FZFM_PREVIEW_COMMAND"
 
 
 test() {
