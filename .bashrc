@@ -293,7 +293,7 @@ fzfm() {
 
 
 test() {
-    echo "testing!"
+    echo "new string!"
 }
 
 
