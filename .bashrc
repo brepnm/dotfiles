@@ -246,7 +246,7 @@ copy_files_from_temp() {
                 fi
             fi
         done < "$temp_file"
-        rm "$temp_file"
+        # rm "$temp_file"
     fi
 }
 export -f copy_files_from_temp
