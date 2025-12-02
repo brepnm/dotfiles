@@ -198,12 +198,30 @@ open_file() {
 
 # Main function
 fzfm() {
+    local return_path=0
+    
+    # Parse parameters
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -p|--path) return_path=1; shift ;;
+            *) shift ;;
+        esac
+    done
+    
     setup_dependencies
 
     local list_command="$LIST_COMMAND $LIST_ARGS"
 
     while true; do
-        selection=$( (echo ".."; eval "$list_command") | fzf \
+        # Add :get_path option if -p flag is set
+        local fzf_input
+        if [ $return_path -eq 1 ]; then
+            fzf_input=$(echo -e "..\n:get_path"; eval "$list_command")
+        else
+            fzf_input=$(echo ".."; eval "$list_command")
+        fi
+        
+        selection=$(echo "$fzf_input" | fzf \
             --ansi \
             --reverse \
             --height 100% \
@@ -247,10 +265,20 @@ fzfm() {
 
         if [[ "$selection" == ".." ]]; then
             cd .. || break
+        elif [[ "$selection" == ":get_path" ]]; then
+            # Return current directory path
+            echo "$(pwd)"
+            break
         elif [[ -d "$selection" ]]; then
             cd "$selection" || break
         elif [[ -f "$selection" ]]; then
-            open_file "$selection"
+            if [ $return_path -eq 1 ]; then
+                # Return file path
+                echo "$(pwd)/$selection"
+                break
+            else
+                open_file "$selection"
+            fi
         else
             break
         fi
