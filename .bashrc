@@ -250,25 +250,28 @@ copy_files_from_temp() {
 }
 export -f copy_files_from_temp
 
-
-move_files_from_temp() {
+cut_files_from_temp() {
     local temp_file="/tmp/fzfm_clipboard.txt"
+    local dest_dir="$PWD"   # destination is the current directory
+
     if [[ -f "$temp_file" ]]; then
         while IFS= read -r filepath; do
             if [[ -f "$filepath" || -d "$filepath" ]]; then
                 local filename=$(basename "$filepath")
                 local basename="${filename%.*}"
                 local extension="${filename##*.}"
+
+                # Handle files without extension
                 if [[ "$filename" == "$extension" ]]; then
                     extension=""
                 else
                     extension=".$extension"
                 fi
 
-                # If original file exists, start with _1
-                if [[ -e "$filename" ]]; then
+                # Prevent overwriting—rename if exists in destination
+                if [[ -e "$dest_dir/$filename" ]]; then
                     local i=1
-                    while [[ -e "${basename}_${i}${extension}" ]]; do
+                    while [[ -e "$dest_dir/${basename}_${i}${extension}" ]]; do
                         ((i++))
                     done
                     local destfile="${basename}_${i}${extension}"
@@ -276,14 +279,21 @@ move_files_from_temp() {
                     local destfile="$filename"
                 fi
 
-                if [[ -f "$filepath" || -d "$filepath" ]]; then
-                    mv "$filepath" "$destfile"
+                # Move file or directory
+                if [[ -f "$filepath" ]]; then
+                    mv "$filepath" "$dest_dir/$destfile"
+                elif [[ -d "$filepath" ]]; then
+                    mv "$filepath" "$dest_dir/$destfile"
                 fi
             fi
         done < "$temp_file"
+
+        # Clear clipboard after cutting
+        > "$temp_file"
     fi
 }
-export -f move_files_from_temp
+export -f cut_files_from_temp
+
 
 
 
@@ -361,7 +371,7 @@ fzfm() {
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
             --bind "ctrl-r:execute(copy_files_from_temp)+reload($list_command)+refresh-preview" \
-            --bind "ctrl-x:execute(move_files_from_temp)+reload($list_command)+refresh-preview" \
+            --bind "ctrl-t:execute(cut_files_from_temp)+reload($list_command)+refresh-preview" \
             --preview-window="right:65%" \
             --preview "
                 file={}
