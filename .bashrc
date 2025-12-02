@@ -230,6 +230,8 @@ copy_files_from_temp() {
         echo "Files copied to current directory"
     fi
 }
+export -f copy_files_from_temp
+
 
 fzfm() {
     local return_path=0
