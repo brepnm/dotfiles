@@ -293,7 +293,7 @@ fzfm() {
 
 
 test() {
-    echo "test!!!"
+    echo "testing!"
 }
 
 
