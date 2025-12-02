@@ -238,7 +238,7 @@ fzfm() {
         if [ $return_path -eq 1 ]; then
             fzf_input=$(echo -e "..\n:get_path"; eval "$list_command")
         else
-            fzf_input=$(echo ".."; eval "$list_command")
+            fzf_input=$(eval "$list_command"; echo "..")
         fi
         
         # BUILD FZF POSITION BIND ONLY IF MOVING BACK AND HAVE PREVIOUS DIR
