@@ -200,27 +200,16 @@ open_file() {
 
 create_directory() {
     read -p "Enter directory name: " directory_name
-    if [ -d "$directory_name" ]; then
-        echo "Directory '$directory_name' already exists."
-        return 1
-    fi
+    
+    #enter while loop until valid name is given
+    while [[ -z "$directory_name" ]]; do
+        echo "Directory name cannot be empty. Please try again."
+        read -p "Enter directory name: " directory_name
+    done
+    
     mkdir "$directory_name"
+    cd "$directory_name" || return 1
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -294,7 +283,7 @@ fzfm() {
             --bind "alt-s:down" \
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
-            --bind "alt-e:accept" \
+            --bind "ctrl-n:change-query(create_directory)+print-query" \
             --preview-window="right:65%" \
             --preview "
                 file={}
