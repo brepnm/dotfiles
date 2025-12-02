@@ -296,5 +296,19 @@ test() {
     echo "test!!!"
 }
 
+
+reload_dotfiles() {
+    cd $HOME/dotfiles
+    
+    git fetch origin main
+    
+    git reset --hard origin/main
+    
+    bash install_dotfiles.sh
+    
+    exec bash -l
+}
+
+
 # bind fzfm to alt-r key combination
 bind '"\er": "fzfm\n"'
