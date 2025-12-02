@@ -220,22 +220,23 @@ copy_files_from_temp() {
         while IFS= read -r filepath; do
             if [[ -f "$filepath" || -d "$filepath" ]]; then
                 local filename=$(basename "$filepath")
-                local destfile="$filename"
+                local basename="${filename%.*}"
+                local extension="${filename##*.}"
+                if [[ "$filename" == "$extension" ]]; then
+                    extension=""
+                else
+                    extension=".$extension"
+                fi
 
-                if [[ -e "$destfile" ]]; then
-                    local basename="${filename%.*}"
-                    local extension="${filename##*.}"
-                    if [[ "$filename" == "$extension" ]]; then
-                        extension=""
-                    else
-                        extension=".$extension"
-                    fi
-                    
+                # If original file exists, start with _1
+                if [[ -e "$filename" ]]; then
                     local i=1
                     while [[ -e "${basename}_${i}${extension}" ]]; do
                         ((i++))
                     done
-                    destfile="${basename}_${i}${extension}"
+                    local destfile="${basename}_${i}${extension}"
+                else
+                    local destfile="$filename"
                 fi
 
                 if [[ -f "$filepath" ]]; then
