@@ -214,9 +214,8 @@ fzfm() {
     setup_dependencies
 
     local list_command="$LIST_COMMAND $LIST_ARGS"
+    local previous_dir_name=""
     local moving_back=false
-    local came_from_path=""
-    local cursor_pos=0
 
     while true; do
         # Add :get_path option if -p flag is set
@@ -227,22 +226,28 @@ fzfm() {
             fzf_input=$(echo ".."; eval "$list_command")
         fi
         
-        # Calculate cursor position if moving back
-        local fzf_bind=""
-        if [ "$moving_back" = true ] && [ -n "$came_from_path" ]; then
-            # Find index of came_from_path in current list
-            cursor_pos=0
+        # BUILD FZF POSITION BIND ONLY IF MOVING BACK AND HAVE PREVIOUS DIR
+        local pos_bind=""
+        if [ "$moving_back" = true ] && [ -n "$previous_dir_name" ]; then
+            # Find the index of previous_dir_name in fzf_input
+            local index=0
             while IFS= read -r line; do
-                if [[ "$line" == "$came_from_path" ]]; then
-                    fzf_bind="--bind 'start:pos($cursor_pos)'"
+                # Remove any formatting characters for comparison
+                local clean_line="${line//[^a-zA-Z0-9._-]/}"
+                local clean_prev="${previous_dir_name//[^a-zA-Z0-9._-]/}"
+                
+                if [[ "$clean_line" == "$clean_prev" ]]; then
+                    pos_bind="--bind=start:pos($index)"
                     break
                 fi
-                ((cursor_pos++))
+                ((index++))
             done <<< "$fzf_input"
+            
+            # Reset flag after applying
             moving_back=false
         fi
         
-        selection=$(echo "$fzf_input" | fzf $fzf_bind \
+        selection=$(echo "$fzf_input" | fzf $pos_bind \
             --ansi \
             --reverse \
             --height 100% \
@@ -285,27 +290,22 @@ fzfm() {
         [[ -z "$selection" ]] && break
 
         if [[ "$selection" == ".." ]]; then
-            # Get path before going back
-            local current_location="$(pwd)"
+            # GOING BACK (UP THE TREE)
+            # Store current dir name before we leave it
+            previous_dir_name="$(basename "$(pwd)")"
             cd .. || break
-            local new_location="$(pwd)"
-            
-            # Compare paths to detect direction
-            if [[ "$current_location" == "$new_location"/* ]]; then
-                # Going back - extract directory name we came from
-                came_from_path="${current_location#$new_location/}"
-                came_from_path="${came_from_path%%/*}"
-                moving_back=true
-            fi
+            # Set flag to apply position on next iteration
+            moving_back=true
             
         elif [[ "$selection" == ":get_path" ]]; then
             # Return current directory path
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
-            # Going forward - reset cursor tracking
+            # GOING DOWN (INTO SUBDIRECTORY)
+            # Clear previous tracking when going forward
+            previous_dir_name=""
             moving_back=false
-            came_from_path=""
             cd "$selection" || break
         elif [[ -f "$selection" ]]; then
             if [ $return_path -eq 1 ]; then
