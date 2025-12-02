@@ -233,6 +233,7 @@ fzfm() {
             --border-label=" 󱉭 $(pwd)/ " \
             --border-label-pos center \
             --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
+            --bind "start:pos:3" \
             --bind "right:accept" \
             --bind "enter:accept" \
             --bind "shift-up:preview-up" \
