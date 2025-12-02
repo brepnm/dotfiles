@@ -73,11 +73,13 @@ fi
 ### ===========================
 ### RELOAD BASHRC
 ### ===========================
-if [[ $- == *i* ]]; then
-    echo "[+] Reloading bashrc..."
-    source "$HOME/.bashrc"
+echo "[+] Reloading bashrc..."
+if [ -f "$BASHRC_DEST" ]; then
+    # Force source in current shell
+    source "$BASHRC_DEST"
+    echo "[✔] Dotfiles installation complete!"
+    echo "[*] Run 'exec bash -l' to fully reload your shell environment"
 else
-    echo "[*] Non-interactive shell — skipping reload."
+    echo "[ERROR] .bashrc not accessible at $BASHRC_DEST"
+    exit 1
 fi
-
-echo "[✔] Dotfiles installation complete!"
