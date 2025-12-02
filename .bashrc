@@ -220,44 +220,34 @@ copy_files_from_temp() {
         while IFS= read -r filepath; do
             if [[ -f "$filepath" || -d "$filepath" ]]; then
                 local basename=$(basename "$filepath")
-                local name="${basename%.*}"
-                local ext="${basename##*.}"
-                # If filename has no extension, treat whole name as name part
-                if [[ "$basename" == "$ext" ]]; then
-                    name="$basename"
-                    ext=""
-                fi
                 
-                # First try the original name
-                if [[ ! -e "$basename" ]]; then
-                    target="$basename"
-                else
-                    # Find the highest existing index
-                    local max_index=0
-                    local pattern
-                    if [[ -n "$ext" && "$ext" != "$basename" ]]; then
-                        pattern="${name}_[0-9]*\.${ext}"
+                if [[ -e "$basename" ]]; then
+                    if [[ -d "$filepath" ]]; then
+                        # For directories
+                        local i=1
+                        while [[ -e "${basename}_$i" ]]; do
+                            ((i++))
+                        done
+                        local target="${basename}_$i"
                     else
-                        pattern="${name}_[0-9]*"
-                    fi
-                    
-                    for f in $pattern; do
-                        if [[ -e "$f" ]]; then
-                            local index=$(echo "$f" | grep -o '_[0-9]*' | grep -o '[0-9]*')
-                            if [[ $index -gt $max_index ]]; then
-                                max_index=$index
-                            fi
+                        # For files
+                        local name="${basename%.*}"
+                        local ext="${basename##*.}"
+                        if [[ "$basename" == "$ext" ]]; then
+                            name="$basename"
+                            ext=""
                         fi
-                    done
-                    
-                    # Create new filename with next index
-                    if [[ -n "$ext" && "$ext" != "$basename" ]]; then
-                        target="${name}_$((max_index + 1)).${ext}"
-                    else
-                        target="${name}_$((max_index + 1))"
+                        
+                        local i=1
+                        while [[ -e "${name}_${i}${ext:+.$ext}" ]]; do
+                            ((i++))
+                        done
+                        local target="${name}_${i}${ext:+.$ext}"
                     fi
+                else
+                    local target="$basename"
                 fi
-                
+
                 if [[ -f "$filepath" ]]; then
                     cp "$filepath" "$target"
                 elif [[ -d "$filepath" ]]; then
