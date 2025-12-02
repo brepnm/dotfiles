@@ -272,7 +272,7 @@ fzfm() {
             --prompt "Search: " \
             --pointer ">" \
             --border "rounded" \
-            --border-label=" 󱉭 $(pwd)/ " \
+            --border-label="$(pwd)/ " \
             --border-label-pos center \
             --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
             --bind "right:accept" \
@@ -286,6 +286,7 @@ fzfm() {
             --bind "alt-a:change-query(..)+print-query" \
             --bind "ctrl-n:execute(create_directory {})+reload($list_command)" \
             --bind "alt-x:execute-silent(gio trash {})+reload($list_command)" \
+            --bind "change:top" \
             --preview-window="right:65%" \
             --preview "
                 file={}
