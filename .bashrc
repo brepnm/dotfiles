@@ -196,6 +196,9 @@ open_file() {
     esac
 }
 
+previous_location=''
+
+
 # Main function
 fzfm() {
     local return_path=0
@@ -226,11 +229,10 @@ fzfm() {
             --reverse \
             --height 100% \
             --info right \
-            --prompt "󰥨 Search: " \
+            --prompt "Search: " \
             --pointer ">" \
-            --marker "󰄲" \
             --border "rounded" \
-            --border-label=" 󱉭 $(pwd)/ " \
+            --border-label="$(pwd)/ " \
             --border-label-pos center \
             --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
             --bind "start:pos:3" \
@@ -265,7 +267,9 @@ fzfm() {
         [[ -z "$selection" ]] && break
 
         if [[ "$selection" == ".." ]]; then
+            previous_location=$(basename "$(pwd)")
             cd .. || break
+
         elif [[ "$selection" == ":get_path" ]]; then
             # Return current directory path
             echo "$(pwd)"
