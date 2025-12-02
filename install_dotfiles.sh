@@ -7,6 +7,8 @@ set -e
 GITHUB_USER="brepnm"
 REPO_NAME="dotfiles"
 DOTFILES_DIR="$HOME/dotfiles"
+BASHRC_SRC="$DOTFILES_DIR/.bashrc"
+BASHRC_DEST="$HOME/.bashrc"
 
 ### ===========================
 ### CLONE OR UPDATE DOTFILES
@@ -16,55 +18,33 @@ if [ ! -d "$DOTFILES_DIR/.git" ]; then
     git clone "https://github.com/$GITHUB_USER/$REPO_NAME.git" "$DOTFILES_DIR"
 else
     echo "[+] Updating existing dotfiles repo..."
-
     cd "$DOTFILES_DIR"
-
+    
     # Avoid merge errors by stashing
     if ! git diff --quiet; then
         echo "[*] Local changes detected → stashing"
         git stash push -m "install-script-auto-stash" >/dev/null
     fi
-
+    
     git pull --rebase --autostash
 fi
 
+# Ensure script is executable after pull
+chmod +x "$DOTFILES_DIR/install_dotfiles.sh"
 
 ### ===========================
-### AUTO-DETECT BASHRC FILE
+### VALIDATE BASHRC EXISTS
 ### ===========================
-echo "[+] Searching for bashrc in $DOTFILES_DIR"
-
-CANDIDATES=(
-    "$DOTFILES_DIR/.bashrc"
-    "$DOTFILES_DIR/bashrc"
-    "$DOTFILES_DIR/bash/.bashrc"
-    "$DOTFILES_DIR/bash/bashrc"
-    "$DOTFILES_DIR/config/.bashrc"
-    "$DOTFILES_DIR/config/bashrc"
-)
-
-BASHRC_SRC=""
-
-for f in "${CANDIDATES[@]}"; do
-    if [ -f "$f" ]; then
-        BASHRC_SRC="$f"
-        break
-    fi
-done
-
-if [ -z "$BASHRC_SRC" ]; then
-    echo "[ERROR] No bashrc file found in dotfiles repo."
-    echo "Create one named either 'bashrc' or '.bashrc' in repo root."
+if [ ! -f "$BASHRC_SRC" ]; then
+    echo "[ERROR] .bashrc not found at $BASHRC_SRC"
     exit 1
 fi
 
 echo "[+] Found bashrc → $BASHRC_SRC"
 
-
 ### ===========================
-### CREATE SYMLINK
+### CREATE SYMLINK (ABSOLUTE PATH)
 ### ===========================
-BASHRC_DEST="$HOME/.bashrc"
 
 # Backup non-symlink bashrc
 if [ -e "$BASHRC_DEST" ] && [ ! -L "$BASHRC_DEST" ]; then
@@ -72,14 +52,23 @@ if [ -e "$BASHRC_DEST" ] && [ ! -L "$BASHRC_DEST" ]; then
     mv "$BASHRC_DEST" "$BASHRC_DEST.backup"
 fi
 
-# Remove old symlink
-if [ -L "$BASHRC_DEST" ]; then
-    rm "$BASHRC_DEST"
+# Remove old/broken symlink
+if [ -L "$BASHRC_DEST" ] || [ -e "$BASHRC_DEST" ]; then
+    rm -f "$BASHRC_DEST"
 fi
 
+# Create symlink with absolute path
 echo "[+] Creating symlink: $BASHRC_DEST → $BASHRC_SRC"
-ln -s "$(cd "$(dirname "$BASHRC_SRC")" && pwd)/$(basename "$BASHRC_SRC")" "$BASHRC_DEST"
+ln -s "$BASHRC_SRC" "$BASHRC_DEST"
 
+# Verify symlink
+if [ -L "$BASHRC_DEST" ]; then
+    echo "[✔] Symlink created successfully"
+    ls -la "$BASHRC_DEST"
+else
+    echo "[ERROR] Failed to create symlink"
+    exit 1
+fi
 
 ### ===========================
 ### RELOAD BASHRC
