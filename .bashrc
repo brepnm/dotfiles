@@ -214,8 +214,6 @@ create_directory() {
 export -f create_directory
 
 
-# Main function
-# Helper function to copy files from paths in temp file to current directory
 copy_files_from_temp() {
     local temp_file="/tmp/fzfm_clipboard.txt"
     if [[ -f "$temp_file" ]]; then
@@ -230,18 +228,35 @@ copy_files_from_temp() {
                     ext=""
                 fi
                 
-                local target="$basename"
-                local counter=1
-                
-                # Keep incrementing counter until we find a non-existing filename
-                while [[ -e "$target" ]]; do
+                # First try the original name
+                if [[ ! -e "$basename" ]]; then
+                    target="$basename"
+                else
+                    # Find the highest existing index
+                    local max_index=0
+                    local pattern
                     if [[ -n "$ext" && "$ext" != "$basename" ]]; then
-                        target="${name}_${counter}.${ext}"
+                        pattern="${name}_[0-9]*\.${ext}"
                     else
-                        target="${name}_${counter}"
+                        pattern="${name}_[0-9]*"
                     fi
-                    ((counter++))
-                done
+                    
+                    for f in $pattern; do
+                        if [[ -e "$f" ]]; then
+                            local index=$(echo "$f" | grep -o '_[0-9]*' | grep -o '[0-9]*')
+                            if [[ $index -gt $max_index ]]; then
+                                max_index=$index
+                            fi
+                        fi
+                    done
+                    
+                    # Create new filename with next index
+                    if [[ -n "$ext" && "$ext" != "$basename" ]]; then
+                        target="${name}_$((max_index + 1)).${ext}"
+                    else
+                        target="${name}_$((max_index + 1))"
+                    fi
+                fi
                 
                 if [[ -f "$filepath" ]]; then
                     cp "$filepath" "$target"
