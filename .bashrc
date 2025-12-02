@@ -265,5 +265,5 @@ fzfm() {
 
 
 test() {
-    echo "testing12345"
+    echo "test!"
 }
