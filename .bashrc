@@ -199,6 +199,7 @@ open_file() {
 # Main function
 fzfm() {
     local return_path=0
+    local previous_dir=""
     
     # Parse parameters
     while [[ $# -gt 0 ]]; do
@@ -221,7 +222,13 @@ fzfm() {
             fzf_input=$(echo ".."; eval "$list_command")
         fi
         
-        selection=$(echo "$fzf_input" | fzf \
+        # Build fzf command with optional cursor positioning
+        local fzf_cmd="fzf"
+        if [ -n "$previous_dir" ]; then
+            fzf_cmd="$fzf_cmd --select='$previous_dir'"
+        fi
+        
+        selection=$(echo "$fzf_input" | $fzf_cmd \
             --ansi \
             --reverse \
             --height 100% \
@@ -264,12 +271,16 @@ fzfm() {
         [[ -z "$selection" ]] && break
 
         if [[ "$selection" == ".." ]]; then
+            # Store current directory name before going up
+            previous_dir=$(basename "$(pwd)")
             cd .. || break
         elif [[ "$selection" == ":get_path" ]]; then
             # Return current directory path
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
+            # Clear previous_dir when entering new directory
+            previous_dir="$selection"
             cd "$selection" || break
         elif [[ -f "$selection" ]]; then
             if [ $return_path -eq 1 ]; then
