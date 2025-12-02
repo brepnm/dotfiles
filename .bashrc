@@ -215,8 +215,25 @@ export -f create_directory
 
 
 # Main function
+# Helper function to copy files from paths in temp file to current directory
+copy_files_from_temp() {
+    local temp_file="/tmp/fzfm_clipboard.txt"
+    if [[ -f "$temp_file" ]]; then
+        while IFS= read -r filepath; do
+            if [[ -f "$filepath" ]]; then
+                cp "$filepath" .
+            elif [[ -d "$filepath" ]]; then
+                cp -r "$filepath" .
+            fi
+        done < "$temp_file"
+        rm "$temp_file"
+        echo "Files copied to current directory"
+    fi
+}
+
 fzfm() {
     local return_path=0
+    local temp_file="/tmp/fzfm_clipboard.txt"
     
     # Parse parameters
     while [[ $# -gt 0 ]]; do
@@ -255,7 +272,6 @@ fzfm() {
                 local clean_prev=$(echo "$previous_dir_name" | tr -cd '[:alnum:]._-')
                 
                 if [[ "$clean_line" == "$clean_prev" ]]; then
-                    # Add 1 to account for ".." at the top
                     pos_bind="--bind=start:pos($((index+1)))"
                     break
                 fi
@@ -267,6 +283,7 @@ fzfm() {
         
         selection=$(echo "$fzf_input" | fzf $pos_bind \
             --ansi \
+            --multi \
             --height 100% \
             --info right \
             --prompt "Search: " \
@@ -287,6 +304,8 @@ fzfm() {
             --bind "ctrl-n:execute(create_directory {})+reload($list_command)" \
             --bind "alt-x:execute-silent(gio trash {})+reload($list_command)" \
             --bind "change:top" \
+            --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)+abort" \
+            --bind "ctrl-v:execute(copy_files_from_temp)+reload($list_command)" \
             --preview-window="right:65%" \
             --preview "
                 file={}
@@ -308,26 +327,19 @@ fzfm() {
         [[ -z "$selection" ]] && break
 
         if [[ "$selection" == ".." ]]; then
-            # GOING BACK (UP THE TREE)
-            # Store current dir name before we leave it
             previous_dir_name="$(basename "$(pwd)")"
             cd .. || break
-            # Set flag to apply position on next iteration
             moving_back=true
             
         elif [[ "$selection" == ":get_path" ]]; then
-            # Return current directory path
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
-            # GOING DOWN (INTO SUBDIRECTORY)
-            # Clear previous tracking when going forward
             previous_dir_name=""
             moving_back=false
             cd "$selection" || break
         elif [[ -f "$selection" ]]; then
             if [ $return_path -eq 1 ]; then
-                # Return file path
                 echo "$(pwd)/$selection"
                 break
             else
