@@ -336,6 +336,7 @@ fzfm() {
             echo "$(pwd)"
             break
         elif [[ -d "$selection" ]]; then
+            read -r selection
             previous_dir_name=""
             moving_back=false
             cd "$selection" || break
