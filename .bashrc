@@ -220,14 +220,37 @@ copy_files_from_temp() {
     local temp_file="/tmp/fzfm_clipboard.txt"
     if [[ -f "$temp_file" ]]; then
         while IFS= read -r filepath; do
-            if [[ -f "$filepath" ]]; then
-                cp "$filepath" .
-            elif [[ -d "$filepath" ]]; then
-                cp -r "$filepath" .
+            if [[ -f "$filepath" || -d "$filepath" ]]; then
+                local basename=$(basename "$filepath")
+                local name="${basename%.*}"
+                local ext="${basename##*.}"
+                # If filename has no extension, treat whole name as name part
+                if [[ "$basename" == "$ext" ]]; then
+                    name="$basename"
+                    ext=""
+                fi
+                
+                local target="$basename"
+                local counter=1
+                
+                # Keep incrementing counter until we find a non-existing filename
+                while [[ -e "$target" ]]; do
+                    if [[ -n "$ext" && "$ext" != "$basename" ]]; then
+                        target="${name}_${counter}.${ext}"
+                    else
+                        target="${name}_${counter}"
+                    fi
+                    ((counter++))
+                done
+                
+                if [[ -f "$filepath" ]]; then
+                    cp "$filepath" "$target"
+                elif [[ -d "$filepath" ]]; then
+                    cp -r "$filepath" "$target"
+                fi
             fi
         done < "$temp_file"
         rm "$temp_file"
-        # echo "Files copied to current directory"
     fi
 }
 export -f copy_files_from_temp
