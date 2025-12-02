@@ -265,5 +265,5 @@ fzfm() {
 
 
 test() {
-    echo "test!"
+    echo "test!!!"
 }
