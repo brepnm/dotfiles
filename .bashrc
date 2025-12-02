@@ -348,6 +348,7 @@ fzfm() {
                 open_file "$selection"
             fi
         else
+            echo "Invalid selection: $selection"
             break
         fi
     done
