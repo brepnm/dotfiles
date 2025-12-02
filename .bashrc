@@ -224,6 +224,7 @@ fzfm() {
             --bind "alt-s:down" \
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
+            --bind "alt-e:accept" \
             --preview-window="right:65%" \
             --preview "
                 file={}
