@@ -267,3 +267,6 @@ fzfm() {
 test() {
     echo "test!!!"
 }
+
+# bind fzfm to alt-r key combination
+bind '"\er": "fzfm\n"'
