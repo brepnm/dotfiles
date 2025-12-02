@@ -252,12 +252,10 @@ fzfm() {
         
         selection=$(echo "$fzf_input" | fzf $pos_bind \
             --ansi \
-            --reverse \
             --height 100% \
             --info right \
-            --prompt "󰥨 Search: " \
+            --prompt "Search: " \
             --pointer ">" \
-            --marker "󰄲" \
             --border "rounded" \
             --border-label=" 󱉭 $(pwd)/ " \
             --border-label-pos center \
