@@ -349,6 +349,7 @@ fzfm() {
 
         elif [[ "$selection" == "sc" ]]; then
             sc
+            break
             
         elif [[ "$selection" == ":get_path" ]]; then
             echo "$(pwd)"
