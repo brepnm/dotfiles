@@ -305,8 +305,6 @@ fzfm() {
             --ansi \
             --multi \
             --height 100% \
-            --info left \
-            --prompt "Search: " \
             --pointer ">" \
             --header=" $(pwd)/ " \
             --color 'fg:#cdd6f4,fg+:#cdd6f4,bg+:#313244,border:#a5aac3,pointer:#cba6f7,label:#cdd6f4' \
