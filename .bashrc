@@ -321,7 +321,7 @@ fzfm() {
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
             --bind "ctrl-r:execute(copy_files_from_temp)+reload($list_command)+refresh-preview" \
-            --bind "alt-q:execute(sc)+abort" \
+            --bind "alt-q:change-query(sc)+print-query" \
             --preview-window="right:65%" \
             --preview "
                 file={}
@@ -346,6 +346,9 @@ fzfm() {
             previous_dir_name="$(basename "$(pwd)")"
             cd .. || break
             moving_back=true
+
+        elif [[ "$selection" == "sc" ]]; then
+            sc
             
         elif [[ "$selection" == ":get_path" ]]; then
             echo "$(pwd)"
@@ -544,4 +547,3 @@ ctrl-a:change-query()"
         fi
     fi
 }
-export -f sc
