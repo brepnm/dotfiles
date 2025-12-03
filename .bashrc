@@ -399,217 +399,177 @@ bind '"\er": "fzfm\n"'
 
 
 
-# ~/.bashrc or ~/.zshrc -------------------------------------------------------
-# -----------------------------------------------------------------------------
-
-# Where the shortcut JSON lives
-SHORTCUTS_FILE="${HOME}/shortcuts.json"
-
-# Optional: a plain text history file (not used by this script itself)
-HISTORY_FILE="${HOME}/shortcuts_history.txt"
-
-# Default: use xdg-open (Linux) or open (macOS) for URLs/files
-if command -v xdg-open &>/dev/null; then
-    OPEN_CMD="xdg-open"
-elif command -v open &>/dev/null; then
-    OPEN_CMD="open"
-else
-    echo "Error: neither xdg-open nor open found.  Install one to use sc." >&2
-    return 1
-fi
-
-# -----------------------------------------------------------------------------
-# The sc command –  arguments are parsed manually for simplicity
-# -----------------------------------------------------------------------------
 sc() {
+    local shortcuts_file="$HOME/.shortcuts.json"  # Define your path
     local key=""
-    local cFlag=
-    local lFlag=
-    local dFlag=
-    local pFlag=
-    local fFlag=
-    local fzfFlag=
-    local returnPathFlag=
+    local create=false
+    local list=false
+    local delete=false
+    local path=""
+    local folder=""
+    local use_fzf=false
+    local return_path=false
     local header=""
-    local showDirsOnlyFlag=
+    local dirs_only=false
     local sort=""
-    local opt
-    local optarg
 
-    # -------- 1. Parse options (simple while loop) -------------------------
+    # Parse arguments
     while [[ $# -gt 0 ]]; do
-        case "$1" in
-            -c|--create)  cFlag=1; shift ;;
-            -l|--list)    lFlag=1; shift ;;
-            -d|--delete)  dFlag=1; shift ;;
-            -p)           shift; pFlag="$1"; shift ;;
-            -f)           shift; fFlag="$1"; shift ;;
-            -fzf)         fzfFlag=1; shift ;;
-            -returnPath)  returnPathFlag=1; shift ;;
-            -header)      shift; header="$1"; shift ;;
-            -ShowDirectoriesOnly) showDirsOnlyFlag=1; shift ;;
-            -sort)        shift; sort="$1"; shift ;;
-            --)           shift; break ;;
-            -* )          echo "Unknown option: $1" >&2; return 1 ;;
-            * )           key="$1"; shift ;;
+        case $1 in
+            -c) create=true ;;
+            -l) list=true ;;
+            -d) delete=true ;;
+            -p) path="$2"; shift ;;
+            -f) folder="$2"; shift ;;
+            -fzf) use_fzf=true ;;
+            --return-path) return_path=true ;;
+            --header) header="$2"; shift ;;
+            --dirs-only) dirs_only=true ;;
+            --sort) sort="$2"; shift ;;
+            *) key="$1" ;;
         esac
+        shift
     done
 
-    # -------- 2. Load the JSON ------------------------------------------------
-    if [[ ! -f "$SHORTCUTS_FILE" ]]; then
-        echo "{}" > "$SHORTCUTS_FILE"
-    fi
-    json=$(<"$SHORTCUTS_FILE")
+    # FZF bindings
+    local fzf_bind="alt-c:execute(code .)+abort,\
+alt-w:up,\
+alt-s:down,\
+alt-d:accept,\
+ctrl-space:accept,\
+alt-a:change-query(📜)+print-query,\
+alt-q:change-query(📜)+print-query,\
+ctrl-a:change-query()"
 
-    # Helper: evaluate a jq expression and return the result
-    _jq() { echo "$json" | jq -r "$1"; }
-
-    # Helper: add to bash history (like PSReadLine in PowerShell)
-    _add_to_history() {
-        # $1 – the full command string
-        # Only add if not already the last entry
-        last_hist=$(history 1 | awk '{$1=""; sub(/^ */,""); print}')
-        [[ "$1" == "$last_hist" ]] || history -s "$1"
+    invoke_shortcut() {
+        local target="$1"
+        
+        if [[ "$target" == *.py ]]; then
+            python3 "$target"
+            echo "python3 \"$target\"" >> "$HISTFILE"
+        elif [[ -f "$target" ]]; then
+            if [[ "$return_path" == true ]]; then
+                echo "$target"
+                return
+            fi
+            # Use xdg-open on Linux, open on MacOS
+            if command -v xdg-open &> /dev/null; then
+                xdg-open "$target"
+            else
+                open "$target"
+            fi
+        elif [[ "$target" =~ ^https?:// ]]; then
+            if command -v xdg-open &> /dev/null; then
+                xdg-open "$target"
+            else
+                open "$target"
+            fi
+        elif [[ -d "$target" ]]; then
+            cd "$target"
+            # Additional cd parameters handling would go here
+            history -s "cd \"$target\""
+        else
+            eval "$target"
+            history -s "$target"
+        fi
     }
 
-    # -------- 3. Handle --delete ------------------------------------------------
-    if [[ $dFlag ]]; then
-        if _jq "has(\"$key\")"; then
-            json=$(echo "$json" | jq "del(.\"$key\")")
-            echo "$json" | jq -S . > "$SHORTCUTS_FILE"
-            echo "Deleted shortcut '$key'" >&2
-        else
-            echo "Shortcut '$key' not found" >&2
-        fi
-        return
-    fi
-
-    # -------- 4. Handle --list --------------------------------------------------
-    if [[ $lFlag ]]; then
-        # Print a table: Alias | Path
-        echo "$json" | jq -r 'to_entries | map(select(.value | type=="object") | {Alias: .key, Path: "[Folder]"} ) + map(select(.value | type!="object") | {Alias: .key, Path: .value}) | .[] | "$.Alias)\t$.Path)"' \
-            | column -t -s $'\t'
-        return
-    fi
-
-    # -------- 5. If a key is supplied -----------------------------------------
-    if [[ -n $key ]]; then
-        if _jq "has(\"$key\")"; then
-            val=$(_jq ".\"$key\"")
-            _process_value "$val"
-            return
-        else
-            echo "Shortcut '$key' not found" >&2
+    select_from_folder() {
+        local folder_json="$1"
+        local combined=()
+        
+        # Parse folder items using jq
+        while IFS= read -r line; do
+            combined+=("$line")
+        done < <(echo "$folder_json" | jq -r 'to_entries | .[] | "\(.key) : \(.value)"')
+        
+        combined+=("📜")
+        
+        local selected=$(printf '%s\n' "${combined[@]}" | fzf -i --bind="$fzf_bind" --bind=change:first)
+        [[ -z "$selected" ]] && return
+        
+        local selected_key="${selected%%:*}"
+        if [[ "$selected_key" == "📜" ]]; then
+            sc
             return
         fi
-    fi
+        
+        echo "$folder_json" | jq -r ".[\"$selected_key\"]"
+    }
 
-    # -------- 6. If --create ---------------------------------------------
-    if [[ $cFlag ]]; then
-        local new_key="$key"
-        # Determine the value to store
-        if [[ -n $pFlag ]]; then
-            new_val="$pFlag"
-        else
-            new_val="$PWD"
-        fi
-
-        if [[ -n $fFlag ]]; then
-            # Ensure folder exists in JSON
-            if ! _jq "has(\"$fFlag\")"; then
-                json=$(echo "$json" | jq ". + {\"$fFlag\": {}}")
-                echo "Folder '$fFlag' created" >&2
+    # Main logic
+    if [[ -z "$key" ]]; then
+        local combined=()
+        while IFS= read -r line; do
+            if echo "$line" | jq -e 'type == "object"' >/dev/null 2>&1; then
+                combined+=("$(echo "$line" | jq -r '.key') : [Folder]")
+            else
+                combined+=("$line")
             fi
-            # Add new shortcut inside the folder
-            json=$(echo "$json" | jq ".\"$fFlag\" + {\"$new_key\": \"$new_val\"}")
-            echo "Shortcut '$new_key' added to folder '$fFlag'" >&2
-        else
-            # Add to root
-            json=$(echo "$json" | jq ". + {\"$new_key\": \"$new_val\"}")
-            echo "Shortcut '$new_key' added" >&2
+        done < <(jq -r 'to_entries | .[] | "\(.key) : \(.value)"' "$shortcuts_file")
+
+        local selected=$(printf '%s\n' "${combined[@]}" | fzf -i --bind="$fzf_bind" --bind=change:first)
+        [[ -z "$selected" ]] && return
+
+        key="${selected%%:*}"
+
+        if [[ "$key" == "🖥️ root" ]]; then
+            local selected_drive=$(df -h | awk '{print $NF}' | fzf -i --header "Select destination")
+            [[ -z "$selected_drive" ]] && return
+            cd "$selected_drive"
+            history -s "cd \"$selected_drive\""
+            # Assuming changeDirectory is needed, implement equivalent
         fi
+    fi
 
-        echo "$json" | jq -S . > "$SHORTCUTS_FILE"
+    # Delete operation
+    if [[ "$delete" == true ]]; then
+        if jq -e "has(\"$key\")" "$shortcuts_file" >/dev/null; then
+            jq "del(.[\"$key\"])" "$shortcuts_file" > "$shortcuts_file.tmp" && 
+            mv "$shortcuts_file.tmp" "$shortcuts_file"
+            echo "Shortcut $key was deleted"
+        else
+            echo "Shortcut not found"
+        fi
         return
     fi
 
-    # -------- 7. Interactive fuzzy picker -------------------------------------
-    # Build the list of top‑level items
-    mapfile -t items < <(
-        echo "$json" | jq -r 'to_entries | map(
-            if .value|type=="object"
-                then .key + " : [Folder]"
-                else .key + " : " + (.value|tostring)
-            end
-        ) | .[]'
-    )
-
-    # If the user pressed Ctrl+C or aborted
-    if [[ ${#items[@]} -eq 0 ]]; then
+    # List operation
+    if [[ "$list" == true ]]; then
+        jq -r 'to_entries | .[] | "\(.key)\t\(.value | if type == "object" then "[Folder]" else . end)"' "$shortcuts_file" | 
+        column -t -s $'\t'
         return
     fi
 
-    # Show fzf picker
-    selection=$(printf '%s\n' "${items[@]}" | fzf -i --header="Select a shortcut (or folder)" --bind="alt-d:down,alt-w:up")
-    [[ -n $selection ]] || return
+    # Create operation
+    if [[ "$create" == true ]]; then
+        if [[ "$use_fzf" == true ]]; then
+            # Implement cd -r equivalent
+            path=$(find . -type d | fzf)
+        fi
+        path="${path:-$(pwd)}"
 
-    selected_key=${selection%% : *}
-    selected_type=${selection##*: }
-
-    if [[ $selected_type == "[Folder]" ]]; then
-        # Browse that folder
-        _browse_folder "$selected_key"
-    else
-        val=$(_jq ".\"$selected_key\"")
-        _process_value "$val"
+        if [[ -n "$folder" ]]; then
+            jq --arg k "$key" --arg v "$path" --arg f "$folder" \
+            'if has($f) then . else . + {($f): {}} end | .[$f][$k] = $v' \
+            "$shortcuts_file" > "$shortcuts_file.tmp" && 
+            mv "$shortcuts_file.tmp" "$shortcuts_file"
+            echo "Shortcut $key was added to folder $folder"
+        else
+            jq --arg k "$key" --arg v "$path" '.[$k] = $v' \
+            "$shortcuts_file" > "$shortcuts_file.tmp" && 
+            mv "$shortcuts_file.tmp" "$shortcuts_file"
+            echo "Shortcut $key was created"
+        fi
+        return
     fi
-}
 
-# -----------------------------------------------------------------------------
-# Helper: process a value (string or object)
-# -----------------------------------------------------------------------------
-_process_value() {
-    local val="$1"
-    if [[ "$val" =~ ^https?:// ]]; then
-        # URL
-        $OPEN_CMD "$val" &
-        _add_to_history "$OPEN_CMD \"$val\""
-    elif [[ -f "$val" && "$val" =~ \.py$ ]]; then
-        # Python file
-        python "$val" &
-        _add_to_history "python \"$val\""
-    elif [[ -f "$val" ]]; then
-        # Regular file – open with the default app
-        $OPEN_CMD "$val" &
-        _add_to_history "$OPEN_CMD \"$val\""
-    elif [[ -d "$val" ]]; then
-        # Directory – change into it
-        cd "$val" || return
-        _add_to_history "cd \"$val\""
-        # Optional: run a nested fzf picker for the dir
-        _browse_folder "$val"
-    else
-        # Anything else – run as shell command
-        eval "$val"
-        _add_to_history "$val"
+    # Execute shortcut
+    if jq -e "has(\"$key\")" "$shortcuts_file" >/dev/null; then
+        local value=$(jq -r ".[\"$key\"]" "$shortcuts_file")
+        if jq -e ".[\"$key\"] | type == \"object\"" "$shortcuts_file" >/dev/null; then
+            value=$(select_from_folder "$value")
+        fi
+        [[ -n "$value" ]] && invoke_shortcut "$value"
     fi
-}
-
-# -----------------------------------------------------------------------------
-# Helper: browse a JSON “folder” (i.e. a nested object)
-# -----------------------------------------------------------------------------
-_browse_folder() {
-    local folder_key="$1"
-    local folder_json=$(_jq ".\"$folder_key\"")
-
-    mapfile -t folder_items < <(
-        echo "$folder_json" | jq -r 'to_entries | map(.key + " : " + (.value|tostring)) | .[]'
-    )
-
-    selection=$(printf '%s\n' "${folder_items[@]}" | fzf -i --header="Folder: $folder_key")
-    [[ -n $selection ]] || return
-
-    selected_key=${selection%% : *}
-    val=$(_jq ".\"$folder_key\".\"$selected_key\"")
-    _process_value "$val"
 }
