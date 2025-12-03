@@ -396,6 +396,9 @@ reload_dotfiles() {
 # bind fzfm to alt-r key combination
 bind '"\er": "fzfm\n"'
 
+# bind sc to alt-q key combination
+bind '"\eq": "sc\n"'
+
 
 
 sc() {
@@ -423,13 +426,13 @@ sc() {
     done
 
     local fzf_bind="alt-c:execute(code .)+abort,\
-alt-w:up,\
-alt-s:down,\
-alt-d:accept,\
-ctrl-space:accept,\
-alt-a:change-query(📜)+print-query,\
-alt-q:change-query(📜)+print-query,\
-ctrl-a:change-query()"
+        alt-w:up,\
+        alt-s:down,\
+        alt-d:accept,\
+        ctrl-space:accept,\
+        alt-a:change-query(📜)+print-query,\
+        alt-q:change-query(📜)+print-query,\
+        ctrl-a:change-query()"
 
     invoke_shortcut() {
         local target="$1"
@@ -450,7 +453,7 @@ ctrl-a:change-query()"
             fi
         elif [[ -d "$target" ]]; then
             cd "$target"
-            echo "Navigated to: $target"
+            # echo "Navigated to: $target"
         else
             eval "$target"
         fi
