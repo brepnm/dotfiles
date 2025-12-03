@@ -305,7 +305,7 @@ fzfm() {
             --ansi \
             --multi \
             --height 100% \
-            --info right \
+            --info left \
             --prompt "Search: " \
             --pointer ">" \
             --header=" $(pwd)/ " \
