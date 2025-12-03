@@ -453,6 +453,7 @@ ctrl-a:change-query()"
             fi
         elif [[ -d "$target" ]]; then
             cd "$target"
+            fzfm
             # echo "Navigated to: $target"
         else
             eval "$target"
