@@ -321,7 +321,7 @@ fzfm() {
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
             --bind "ctrl-r:execute(copy_files_from_temp)+reload($list_command)+refresh-preview" \
-            --bind "alt-q:change-query(sc)+print-query" \
+            --bind "alt-q:execute(sc)+abort" \
             --preview-window="right:65%" \
             --preview "
                 file={}
@@ -544,3 +544,4 @@ ctrl-a:change-query()"
         fi
     fi
 }
+export -f sc
