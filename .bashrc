@@ -426,13 +426,13 @@ sc() {
     done
 
     local fzf_bind="alt-c:execute(code .)+abort,\
-        alt-w:up,\
-        alt-s:down,\
-        alt-d:accept,\
-        ctrl-space:accept,\
-        alt-a:change-query(📜)+print-query,\
-        alt-q:change-query(📜)+print-query,\
-        ctrl-a:change-query()"
+alt-w:up,\
+alt-s:down,\
+alt-d:accept,\
+ctrl-space:accept,\
+alt-a:change-query(📜)+print-query,\
+alt-q:change-query(📜)+print-query,\
+ctrl-a:change-query()"
 
     invoke_shortcut() {
         local target="$1"
