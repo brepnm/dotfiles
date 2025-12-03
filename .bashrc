@@ -398,7 +398,6 @@ bind '"\er": "fzfm\n"'
 
 
 
-
 sc() {
     local shortcuts_file="$HOME/.shortcuts.json"  # Define your path
     local key=""
@@ -408,10 +407,6 @@ sc() {
     local path=""
     local folder=""
     local use_fzf=false
-    local return_path=false
-    local header=""
-    local dirs_only=false
-    local sort=""
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -422,16 +417,11 @@ sc() {
             -p) path="$2"; shift ;;
             -f) folder="$2"; shift ;;
             -fzf) use_fzf=true ;;
-            --return-path) return_path=true ;;
-            --header) header="$2"; shift ;;
-            --dirs-only) dirs_only=true ;;
-            --sort) sort="$2"; shift ;;
             *) key="$1" ;;
         esac
         shift
     done
 
-    # FZF bindings
     local fzf_bind="alt-c:execute(code .)+abort,\
 alt-w:up,\
 alt-s:down,\
@@ -446,13 +436,7 @@ ctrl-a:change-query()"
         
         if [[ "$target" == *.py ]]; then
             python3 "$target"
-            echo "python3 \"$target\"" >> "$HISTFILE"
         elif [[ -f "$target" ]]; then
-            if [[ "$return_path" == true ]]; then
-                echo "$target"
-                return
-            fi
-            # Use xdg-open on Linux, open on MacOS
             if command -v xdg-open &> /dev/null; then
                 xdg-open "$target"
             else
@@ -466,85 +450,28 @@ ctrl-a:change-query()"
             fi
         elif [[ -d "$target" ]]; then
             cd "$target"
-            # Additional cd parameters handling would go here
-            history -s "cd \"$target\""
+            echo "Navigated to: $target"
         else
             eval "$target"
-            history -s "$target"
         fi
     }
 
-    select_from_folder() {
-        local folder_json="$1"
-        local combined=()
+    # Main shortcut selection logic
+    if [[ -z "$key" && "$create" == false && "$list" == false && "$delete" == false ]]; then
+        # Read all shortcuts and their values
+        local entries=$(jq -r 'to_entries | .[] | if .value | type == "object" then "\(.key) : [Folder]" else "\(.key) : \(.value)" end' "$shortcuts_file")
         
-        # Parse folder items using jq
-        while IFS= read -r line; do
-            combined+=("$line")
-        done < <(echo "$folder_json" | jq -r 'to_entries | .[] | "\(.key) : \(.value)"')
-        
-        combined+=("📜")
-        
-        local selected=$(printf '%s\n' "${combined[@]}" | fzf -i --bind="$fzf_bind" --bind=change:first)
-        [[ -z "$selected" ]] && return
-        
-        local selected_key="${selected%%:*}"
-        if [[ "$selected_key" == "📜" ]]; then
-            sc
-            return
-        fi
-        
-        echo "$folder_json" | jq -r ".[\"$selected_key\"]"
-    }
-
-    # Main logic
-    if [[ -z "$key" ]]; then
-        local combined=()
-        while IFS= read -r line; do
-            if echo "$line" | jq -e 'type == "object"' >/dev/null 2>&1; then
-                combined+=("$(echo "$line" | jq -r '.key') : [Folder]")
-            else
-                combined+=("$line")
-            fi
-        done < <(jq -r 'to_entries | .[] | "\(.key) : \(.value)"' "$shortcuts_file")
-
-        local selected=$(printf '%s\n' "${combined[@]}" | fzf -i --bind="$fzf_bind" --bind=change:first)
+        # Use fzf to select a shortcut
+        local selected=$(echo "$entries" | fzf -i --bind="$fzf_bind" --bind=change:first)
         [[ -z "$selected" ]] && return
 
-        key="${selected%%:*}"
-
-        if [[ "$key" == "🖥️ root" ]]; then
-            local selected_drive=$(df -h | awk '{print $NF}' | fzf -i --header "Select destination")
-            [[ -z "$selected_drive" ]] && return
-            cd "$selected_drive"
-            history -s "cd \"$selected_drive\""
-            # Assuming changeDirectory is needed, implement equivalent
-        fi
-    fi
-
-    # Delete operation
-    if [[ "$delete" == true ]]; then
-        if jq -e "has(\"$key\")" "$shortcuts_file" >/dev/null; then
-            jq "del(.[\"$key\"])" "$shortcuts_file" > "$shortcuts_file.tmp" && 
-            mv "$shortcuts_file.tmp" "$shortcuts_file"
-            echo "Shortcut $key was deleted"
-        else
-            echo "Shortcut not found"
-        fi
-        return
-    fi
-
-    # List operation
-    if [[ "$list" == true ]]; then
-        jq -r 'to_entries | .[] | "\(.key)\t\(.value | if type == "object" then "[Folder]" else . end)"' "$shortcuts_file" | 
-        column -t -s $'\t'
-        return
+        # Extract the key from the selection
+        key=$(echo "$selected" | cut -d ':' -f1 | tr -d ' ')
     fi
 
     # Create operation
     if [[ "$create" == true ]]; then
         if [[ "$use_fzf" == true ]]; then
-            # Implement cd -r equivalent
             path=$(find . -type d | fzf)
         fi
         path="${path:-$(pwd)}"
@@ -564,12 +491,51 @@ ctrl-a:change-query()"
         return
     fi
 
-    # Execute shortcut
-    if jq -e "has(\"$key\")" "$shortcuts_file" >/dev/null; then
-        local value=$(jq -r ".[\"$key\"]" "$shortcuts_file")
-        if jq -e ".[\"$key\"] | type == \"object\"" "$shortcuts_file" >/dev/null; then
-            value=$(select_from_folder "$value")
+    # List operation
+    if [[ "$list" == true ]]; then
+        jq -r 'to_entries | .[] | "\(.key)\t\(.value | if type == "object" then "[Folder]" else . end)"' "$shortcuts_file" | 
+        column -t -s $'\t'
+        return
+    fi
+
+    # Delete operation
+    if [[ "$delete" == true ]]; then
+        if jq -e "has(\"$key\")" "$shortcuts_file" >/dev/null; then
+            jq "del(.[\"$key\"])" "$shortcuts_file" > "$shortcuts_file.tmp" && 
+            mv "$shortcuts_file.tmp" "$shortcuts_file"
+            echo "Shortcut $key was deleted"
+        else
+            echo "Shortcut not found"
         fi
-        [[ -n "$value" ]] && invoke_shortcut "$value"
+        return
+    fi
+
+    # Execute shortcut
+    if [[ -n "$key" ]]; then
+        # Check if the key exists in the shortcuts
+        if jq -e "has(\"$key\")" "$shortcuts_file" >/dev/null; then
+            # Get the value for the key
+            local value=$(jq -r ".[\"$key\"]" "$shortcuts_file")
+            
+            # Check if the value is an object (folder)
+            if jq -e ".[\"$key\"] | type == \"object\"" "$shortcuts_file" >/dev/null; then
+                # Handle folder case
+                local folder_entries=$(jq -r ".[\"$key\"] | to_entries | .[] | \"\(.key) : \(.value)\"" "$shortcuts_file")
+                local selected=$(echo -e "${folder_entries}\n📜" | fzf -i --bind="$fzf_bind" --bind=change:first)
+                [[ -z "$selected" ]] && return
+                
+                if [[ "$selected" == "📜" ]]; then
+                    sc
+                    return
+                fi
+                
+                value=$(echo "$selected" | cut -d ':' -f2- | tr -d ' ')
+            fi
+            
+            # Execute the shortcut
+            invoke_shortcut "$value"
+        else
+            echo "Shortcut not found: $key"
+        fi
     fi
 }
