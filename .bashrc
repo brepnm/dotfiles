@@ -612,5 +612,4 @@ nav_dirs() {
 # bind '"\ea": "\C-unav_dirs back\C-m"'
 # bind '"\ed": "\C-unav_dirs forward\C-m"'
 
-bind -x '"\201": cd ..'
-bind '"\C-x\C-d":"\201\C-m"'
+bind '"\C-x\C-d":"cd ..\C-m"'
