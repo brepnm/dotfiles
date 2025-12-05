@@ -599,6 +599,7 @@ go_up_and_record() {
     cd ..
     printf '\033[K'
     echo "[←] Moved up to: $PWD"
+
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -642,6 +643,6 @@ go_forward() {
 
 # ---- Readline keybindings ----
 # Alt-a
-bind -x '"\ea":go_up_and_record'
+bind -x '"\ea":go_up_and_record; echo ""'
 # Alt-d
-bind -x '"\ed":go_forward'
+bind -x '"\ed":go_forward; echo ""'
