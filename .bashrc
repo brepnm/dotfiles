@@ -579,6 +579,23 @@ ctrl-a:change-query()"
 declare -a forward_stack=()
 declare -a backward_stack=()
 
+
+_redraw_prompt() {
+    # Save cursor position
+    tput sc
+    
+    # Move to start of line and clear it
+    printf '\r\033[K'
+
+    # Print PS1 (with prompt escapes expanded)
+    printf "%b" "$(printf "%s" "$PS1" | sed 's/\\\[/\x1b\[/g')"
+
+    # Restore cursor position (keeps you at end of prompt)
+    tput rc
+}
+
+
+
 # Main navigation function
 nav_dirs() {
     local direction=$1
@@ -600,6 +617,8 @@ nav_dirs() {
             fi
             ;;
     esac
+
+    _redraw_prompt
 }
 
 # Bind the keys using bind -x
