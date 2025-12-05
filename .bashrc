@@ -591,7 +591,6 @@ nav_dirs() {
                 # Save current directory to forward stack
                 forward_stack+=("$current_dir")
                 cd ..
-                # Print current location
             fi
             ;;
             
@@ -604,7 +603,6 @@ nav_dirs() {
                 unset 'forward_stack[-1]'
                 # Navigate to it
                 cd "$next_dir"
-                # Print current location
             fi
             ;;
     esac
