@@ -589,8 +589,6 @@ nav_dirs() {
             if [ "$PWD" != "/" ]; then
                 forward_stack+=("$current_dir")
                 cd ..
-                # update bash prompt to show current dir
-                echo -e "\e]0;$(pwd)\a"
                 
                 
             fi
@@ -601,8 +599,6 @@ nav_dirs() {
                 local next_dir="${forward_stack[-1]}"
                 unset 'forward_stack[-1]'
                 cd "$next_dir"
-                # update prompt
-                echo -e "\e]0;$(pwd)\a"
                 
             fi
             ;;
@@ -610,8 +606,8 @@ nav_dirs() {
 }
 
 
-bind -x '"\ea": nav_dirs back'
-bind -x '"\ed": nav_dirs forward'
+bind -x '"\ea": nav_dirs back; printf "\n"'
+bind -x '"\ed": nav_dirs forward; printf "\n"'
 
 
 # bind -x '"\201": nav_dirs back'
