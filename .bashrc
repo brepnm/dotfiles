@@ -582,17 +582,14 @@ declare -a backward_stack=()
 # Main navigation function
 nav_dirs() {
     local direction=$1
-    local current_dir=$(pwd)
     
     case $direction in
         "back")
             # If we're not at root and can go up
             if [ "$PWD" != "/" ]; then
                 # Save current directory to forward stack
-                forward_stack+=("$current_dir")
+                forward_stack+=("$PWD")
                 cd ..
-                # Print current location
-                pwd
             fi
             ;;
             
@@ -605,13 +602,11 @@ nav_dirs() {
                 unset 'forward_stack[-1]'
                 # Navigate to it
                 cd "$next_dir"
-                # Print current location
-                pwd
             fi
             ;;
     esac
 }
 
-# Bind the keys (add these lines to your .bashrc)
-bind '"\ea": "\C-unav_dirs back\C-m"'
-bind '"\ed": "\C-unav_dirs forward\C-m"'
+# Bind keys silently using bind -x (add to .bashrc)
+bind -x '"\ea": nav_dirs back'
+bind -x '"\ed": nav_dirs forward'
