@@ -336,6 +336,7 @@ fzfm() {
             --bind "ctrl-n:execute(create_directory {})+reload($list_command)" \
             --bind "alt-n:execute(create_file {})+reload($list_command)" \
             --bind "alt-x:execute-silent(gio trash {})+reload($list_command)" \
+            --bind "ctrl-a:clear-query" \
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
             --bind "ctrl-r:execute(copy_files_from_temp)+reload($list_command)+refresh-preview" \
