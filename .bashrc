@@ -218,7 +218,7 @@ create_file() {
     read -p "Enter file name: " file_name
     
     #if directory_name exists or is empty, enter while loop until valid name is given
-    while [ -z "$file_name" ] || [ -d "$file_name" ];
+    while [ -z "$file_name" ] || [ -f "$file_name" ];
     do
         echo "Invalid or existing directory name. Please try again."
         read -p "Enter directory name: " directory_name
