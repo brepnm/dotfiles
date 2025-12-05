@@ -600,6 +600,10 @@ nav_dirs() {
             fi
             ;;
     esac
+    
+    # Force prompt update
+    bind "\"\\C-m\":redraw-current-line"
+    bind '"\C-m":accept-line'
 }
 
 # Bind the keys using bind -x
