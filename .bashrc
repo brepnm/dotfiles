@@ -596,7 +596,7 @@ go_up_and_record() {
 
     push_forward
     
-    echo -n "!"; cd .. || return
+    echo -ne "$pc%\033[0K\r"; cd .. || return
 
 }
 
@@ -612,7 +612,7 @@ go_forward() {
     local parent="$(dirname "$PWD")"
 
     if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
-        echo -n "!"; cd "$target" || return
+        echo -ne "$pc%\033[0K\r"; cd "$target" || return
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
