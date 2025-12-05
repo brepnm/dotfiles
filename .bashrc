@@ -453,7 +453,6 @@ alt-w:up,\
 alt-s:down,\
 alt-d:accept,\
 ctrl-space:accept,\
-ctrl-a :clear-query,\
 alt-a:change-query(📜)+print-query,\
 alt-q:change-query(📜)+print-query,\
 ctrl-a:change-query()"
