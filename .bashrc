@@ -634,7 +634,7 @@ do
     sleep 0.3
 done
 }
-PS1='[     ] :\u @ \h:\w> '
+PS1='[     ]:\u@\h:\w>'
 animation &
 
 # ---- Readline keybindings ----
