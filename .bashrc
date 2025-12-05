@@ -602,6 +602,10 @@ nav_dirs() {
     esac
 }
 
-# Bind the keys using bind -x
-bind -x '"\ea": nav_dirs back'
-bind -x '"\ed": nav_dirs forward'
+
+bind -x '"\201": nav_dirs back'
+bind '"\ea":"\201\C-m"'
+
+
+# bind -x '"\ea": nav_dirs back'
+# bind -x '"\ed": nav_dirs forward'
