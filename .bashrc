@@ -601,9 +601,10 @@ nav_dirs() {
             ;;
     esac
     
-    # Force prompt update
-    bind "\"\\C-m\":redraw-current-line"
-    bind '"\C-m":accept-line'
+    # Update prompt
+    printf '\033[A\033[K'  # Move up one line and clear it
+    printf '%s' "${PS1@P}" # Print evaluated prompt
+    bind 'redisplay'       # Force readline to redisplay
 }
 
 # Bind the keys using bind -x
