@@ -579,22 +579,39 @@ ctrl-a:change-query()"
 declare -a forward_stack=()
 declare -a backward_stack=()
 
-# Main navigation function without any output
-__nav_back() {
-    if [ "$PWD" != "/" ]; then
-        forward_stack+=("$PWD")
-        cd ..
-    fi
+# Main navigation function
+nav_dirs() {
+    local direction=$1
+    local current_dir=$(pwd)
+    
+    case $direction in
+        "back")
+            # If we're not at root and can go up
+            if [ "$PWD" != "/" ]; then
+                # Save current directory to forward stack
+                forward_stack+=("$current_dir")
+                cd ..
+                # Print current location
+                pwd
+            fi
+            ;;
+            
+        "forward")
+            # Check if forward stack has entries
+            if [ ${#forward_stack[@]} -gt 0 ]; then
+                # Get last directory from forward stack
+                local next_dir="${forward_stack[-1]}"
+                # Remove it from forward stack
+                unset 'forward_stack[-1]'
+                # Navigate to it
+                cd "$next_dir"
+                # Print current location
+                pwd
+            fi
+            ;;
+    esac
 }
 
-__nav_forward() {
-    if [ ${#forward_stack[@]} -gt 0 ]; then
-        local next_dir="${forward_stack[-1]}"
-        unset 'forward_stack[-1]'
-        cd "$next_dir"
-    fi
-}
-
-# Bind the keys directly to the functions
-bind -x '"\ea": __nav_back'
-bind -x '"\ed": __nav_forward'
+# Bind the keys (add these lines to your .bashrc)
+bind '"\ea": "\C-unav_dirs back\C-m"'
+bind '"\ed": "\C-unav_dirs forward\C-m"'
