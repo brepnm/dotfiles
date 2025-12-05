@@ -592,7 +592,6 @@ nav_dirs() {
                 forward_stack+=("$current_dir")
                 cd ..
                 # Print current location
-                pwd > /dev/null
             fi
             ;;
             
@@ -606,12 +605,11 @@ nav_dirs() {
                 # Navigate to it
                 cd "$next_dir"
                 # Print current location
-                pwd > /dev/null
             fi
             ;;
     esac
 }
 
 # Bind the keys (add these lines to your .bashrc)
-bind -x '"\ea":nav_dirs forward'
-bind -x '"\ed":nav_dirs back'
+bind '"\ea": "\C-unav_dirs back\C-m"'
+bind '"\ed": "\C-unav_dirs forward\C-m"'
