@@ -597,7 +597,7 @@ go_up_and_record() {
     push_forward
     
     cd ..
-    pwd
+    echo "/C-m"
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -613,7 +613,7 @@ go_forward() {
 
     if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
         cd "$target"
-        pwd
+        echo "/C-m"
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
