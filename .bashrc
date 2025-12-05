@@ -641,6 +641,6 @@ go_forward() {
 
 # ---- Readline keybindings ----
 # Alt-a
-bind -x '"\ea":go_up_and_record\C-m'
+bind -x '"\ea":go_up_and_record \C-m'
 # Alt-d
-bind -x '"\ed":go_forward\C-m'
+bind -x '"\ed":go_forward \C-m'
