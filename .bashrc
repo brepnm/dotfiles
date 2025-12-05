@@ -579,16 +579,10 @@ ctrl-a:change-query()"
 declare -a forward_stack=()
 declare -a backward_stack=()
 
-# Flag to suppress prompt
-SUPPRESS_PROMPT=0
-
 # Main navigation function
 nav_dirs() {
     local direction=$1
     local current_dir=$(pwd)
-    
-    # Set flag to suppress next prompt
-    SUPPRESS_PROMPT=1
     
     case $direction in
         "back")
@@ -607,18 +601,11 @@ nav_dirs() {
             ;;
     esac
     
-    # Clear line and print prompt
-    echo -en "\r\033[K$PS1"
+    # Clear line and print clean prompt
+    echo -en "\r\033[K"
+    # Force bash to redraw the prompt
+    kill -WINCH $$
 }
-
-# Add to your PROMPT_COMMAND
-prompt_func() {
-    if [ $SUPPRESS_PROMPT -eq 1 ]; then
-        SUPPRESS_PROMPT=0
-        return
-    fi
-}
-PROMPT_COMMAND="prompt_func; $PROMPT_COMMAND"
 
 # Bind the keys
 bind '"\ea": "\C-unav_dirs back\C-m"'
