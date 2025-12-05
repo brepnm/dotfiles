@@ -597,7 +597,8 @@ go_up_and_record() {
     push_forward
     
     cd ..
-    echo "/C-m"
+    printf '\033[K'
+    echo "[←] Moved up to: $PWD"
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -613,8 +614,8 @@ go_forward() {
 
     if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
         cd "$target"
-        echo "/C-m"
-        # pop last entry
+        printf '\033[K'
+        echo "[→] Moved forward to: $target"
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
     fi
@@ -641,6 +642,6 @@ go_forward() {
 
 # ---- Readline keybindings ----
 # Alt-a
-bind -x '"\ea":go_up_and_record \C-m'
+bind -x '"\ea":go_up_and_record'
 # Alt-d
-bind -x '"\ed":go_forward \C-m'
+bind -x '"\ed":go_forward'
