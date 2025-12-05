@@ -589,6 +589,8 @@ nav_dirs() {
             if [ "$PWD" != "/" ]; then
                 forward_stack+=("$current_dir")
                 cd ..
+                # update prompt
+                PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
             fi
             ;;
             
@@ -597,6 +599,8 @@ nav_dirs() {
                 local next_dir="${forward_stack[-1]}"
                 unset 'forward_stack[-1]'
                 cd "$next_dir"
+                # update prompt
+                PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
             fi
             ;;
     esac
@@ -605,6 +609,8 @@ nav_dirs() {
 
 bind -x '"\ea": nav_dirs back'
 bind -x '"\ed": nav_dirs forward'
+
+
 # bind -x '"\201": nav_dirs back'
 # bind -x '"\ea":"\201\C-m"'
 
