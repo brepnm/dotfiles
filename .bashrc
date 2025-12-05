@@ -596,6 +596,8 @@ go_up_and_record() {
 
     push_forward
     cd .. || return
+
+    force_prompt_redraw
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -613,8 +615,27 @@ go_forward() {
         cd "$target" || return
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
+
+        force_prompt_redraw
     fi
 }
+
+
+force_prompt_redraw() {
+    # clear current editing buffer
+    READLINE_LINE=""
+    READLINE_POINT=0
+
+    # move to start of line, clear it
+    printf '\r\e[2K'
+
+    # run PROMPT_COMMAND and print PS1
+    if [[ -n "$PROMPT_COMMAND" ]]; then
+        eval "$PROMPT_COMMAND"
+    fi
+    printf '%s' "$PS1"
+}
+
 
 # ---- Readline keybindings ----
 # Alt-a
