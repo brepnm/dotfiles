@@ -334,7 +334,7 @@ fzfm() {
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
             --bind "ctrl-n:execute(create_directory {})+reload($list_command)" \
-            --bind "ctrl-alt-n:execute(create_file {})+reload($list_command)" \
+            --bind "alt-n:execute(create_file {})+reload($list_command)" \
             --bind "alt-x:execute-silent(gio trash {})+reload($list_command)" \
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
