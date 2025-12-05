@@ -596,7 +596,7 @@ go_up_and_record() {
 
     push_forward
     
-    $ echo -e "abcdefghijklmnopqrstuvwxyz\r\033[K0123456789"; cd .. || return
+    echo -e "abcdefghijklmnopqrstuvwxyz\r\033[K0123456789"; cd .. || return
 
 }
 
@@ -612,7 +612,7 @@ go_forward() {
     local parent="$(dirname "$PWD")"
 
     if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
-        $ echo -e "abcdefghijklmnopqrstuvwxyz\r\033[K0123456789"; cd "$target" || return
+        echo -e "abcdefghijklmnopqrstuvwxyz\r\033[K0123456789"; cd "$target" || return
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
