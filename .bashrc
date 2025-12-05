@@ -589,8 +589,10 @@ nav_dirs() {
             if [ "$PWD" != "/" ]; then
                 forward_stack+=("$current_dir")
                 cd ..
-                # update prompt
-                PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+                # update bash prompt to show current dir
+                echo -e "\e]0;$(pwd)\a"
+                
+                
             fi
             ;;
             
@@ -600,7 +602,8 @@ nav_dirs() {
                 unset 'forward_stack[-1]'
                 cd "$next_dir"
                 # update prompt
-                PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+                echo -e "\e]0;$(pwd)\a"
+                
             fi
             ;;
     esac
