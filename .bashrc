@@ -608,6 +608,9 @@ nav_dirs() {
     esac
 }
 
-# Bind the keys (add these lines to your .bashrc)
-bind '"\ea": "\C-unav_dirs back\C-m"'
-bind '"\ed": "\C-unav_dirs forward\C-m"'
+# # Bind the keys (add these lines to your .bashrc)
+# bind '"\ea": "\C-unav_dirs back\C-m"'
+# bind '"\ed": "\C-unav_dirs forward\C-m"'
+
+bind -x '"\201": cd ..'
+bind '"\C-x\C-d":"\201\C-m"'
