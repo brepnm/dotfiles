@@ -609,5 +609,5 @@ nav_dirs() {
 }
 
 # Bind the keys (add these lines to your .bashrc)
-bind '"\ea": "\C-unav_dirs back\C-m" 2>/dev/null' 
-bind '"\ed": "\C-unav_dirs forward\C-m" 2>/dev/null' 
+bind '"\ea": "\C-unav_dirs back\C-m"'
+bind '"\ed": "\C-unav_dirs forward\C-m"'
