@@ -92,7 +92,19 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
+
 bind 'set bell-style none'
+
+# bind fzfm to alt-r key combination
+bind '"\er": "fzfm\n"'
+
+# bind sc to alt-q key combination
+bind '"\eq": "sc\n"'
+
+
+bind '"\ea": "cd ..\n"'
+
+
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -414,13 +426,6 @@ reload_dotfiles() {
     
     exec bash -l
 }
-
-
-# bind fzfm to alt-r key combination
-bind '"\er": "fzfm\n"'
-
-# bind sc to alt-q key combination
-bind '"\eq": "sc\n"'
 
 
 
