@@ -579,32 +579,22 @@ ctrl-a:change-query()"
 declare -a forward_stack=()
 declare -a backward_stack=()
 
-# Main navigation function
-nav_dirs() {
-    local direction=$1
-    local current_dir=$(pwd)
-    
-    case $direction in
-        "back")
-            if [ "$PWD" != "/" ]; then
-                forward_stack+=("$current_dir")
-                cd .. > /dev/null
-            fi
-            ;;
-            
-        "forward")
-            if [ ${#forward_stack[@]} -gt 0 ]; then
-                local next_dir="${forward_stack[-1]}"
-                unset 'forward_stack[-1]'
-                cd "$next_dir" > /dev/null
-            fi
-            ;;
-    esac
-    
-    # Clear the command from history
-    history -d $(history 1)
+# Main navigation function without any output
+__nav_back() {
+    if [ "$PWD" != "/" ]; then
+        forward_stack+=("$PWD")
+        cd ..
+    fi
 }
 
-# Bind the keys
-bind '"\ea": "\C-unav_dirs back\n\C-u"'
-bind '"\ed": "\C-unav_dirs forward\n\C-u"'
+__nav_forward() {
+    if [ ${#forward_stack[@]} -gt 0 ]; then
+        local next_dir="${forward_stack[-1]}"
+        unset 'forward_stack[-1]'
+        cd "$next_dir"
+    fi
+}
+
+# Bind the keys directly to the functions
+bind -x '"\ea": __nav_back'
+bind -x '"\ed": __nav_forward'
