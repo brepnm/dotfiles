@@ -603,9 +603,8 @@ nav_dirs() {
 }
 
 
-bind -x "\ea":nav_dirs back
-bind -x "\ed":nav_dirs forward
-
+bind -x '"\ea": nav_dirs back'
+bind -x '"\ed": nav_dirs forward'
 # bind -x '"\201": nav_dirs back'
 # bind -x '"\ea":"\201\C-m"'
 
