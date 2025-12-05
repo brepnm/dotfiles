@@ -575,41 +575,49 @@ ctrl-a:change-query()"
 }
 
 
-# Initialize stacks as arrays
-declare -a forward_stack=()
-declare -a backward_stack=()
+# ---- forward directory stack ----
+forward_stack=()
 
-# Main navigation function
-nav_dirs() {
-    local direction=$1
-    local current_dir=$(pwd)
-    
-    case $direction in
-        "back")
-            # If we're not at root and can go up
-            if [ "$PWD" != "/" ]; then
-                # Save current directory to forward stack
-                forward_stack+=("$current_dir")
-                cd ..
-            fi
-            ;;
-            
-        "forward")
-            # Check if forward stack has entries
-            if [ ${#forward_stack[@]} -gt 0 ]; then
-                # Get last directory from forward stack
-                local next_dir="${forward_stack[-1]}"
-                # Remove it from forward stack
-                unset 'forward_stack[-1]'
-                # Navigate to it
-                cd "$next_dir"
-            fi
-            ;;
-    esac
+# push into forward stack, keep max 20
+push_forward() {
+    local path="$PWD"
+    forward_stack+=("$path")
+    if (( ${#forward_stack[@]} > 20 )); then
+        forward_stack=("${forward_stack[@]:1:20}")
+    fi
 }
 
-# # Bind the keys (add these lines to your .bashrc)
-# bind '"\ea": "\C-unav_dirs back\C-m"'
-# bind '"\ed": "\C-unav_dirs forward\C-m"'
+# Alt+a = go up while saving PWD
+go_up_and_record() {
+    # Don't record if at root
+    if [[ "$PWD" == "/" ]]; then
+        return
+    fi
 
-# bind '"\C-x\C-d":"cd ..\C-m"'
+    push_forward
+    cd .. || return
+}
+
+# Alt+d = go forward (if deeper path exists)
+go_forward() {
+    local n=${#forward_stack[@]}
+    (( n == 0 )) && return
+
+    local target="${forward_stack[$((n-1))]}"
+    local current="$PWD"
+
+    # Check if target is a deeper subpath of parent of $PWD
+    local parent="$(dirname "$PWD")"
+
+    if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
+        cd "$target" || return
+        # pop last entry
+        forward_stack=("${forward_stack[@]:0:$((n-1))}")
+    fi
+}
+
+# ---- Readline keybindings ----
+# Alt-a
+bind -x '"\ea":go_up_and_record'
+# Alt-d
+bind -x '"\ed":go_forward'
