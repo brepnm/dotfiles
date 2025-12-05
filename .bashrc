@@ -224,7 +224,7 @@ create_file() {
         read -p "Enter directory name: " directory_name
     done
     
-    mkdir "$file_name"
+    touch "$file_name"
     return 1
 }
 export -f create_file
