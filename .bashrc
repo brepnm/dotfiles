@@ -600,8 +600,11 @@ nav_dirs() {
             fi
             ;;
     esac
+    
+    # Clear the command from history
+    history -d $(history 1)
 }
 
 # Bind the keys
-bind '"\ea": "\C-unav_dirs back >/dev/null\C-m"'
-bind '"\ed": "\C-unav_dirs forward >/dev/null\C-m"'
+bind '"\ea": "\C-unav_dirs back\n\C-u"'
+bind '"\ed": "\C-unav_dirs forward\n\C-u"'
