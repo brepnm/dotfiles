@@ -612,6 +612,14 @@ nav_dirs() {
     esac
 }
 
-# Bind the keys (add these lines to your .bashrc)
-bind -x '"\ea":"nav_dirs back"'
-bind -x '"\ed":"nav_dirs forward"'
+# Define a wrapper function that will be used in the bind command
+_nav_dirs_wrapper() {
+    echo -en "\033[2K"  # Clear the current line
+    nav_dirs "$READLINE_LINE"
+    READLINE_LINE=""    # Clear the line after execution
+    READLINE_POINT=0    # Reset cursor position
+}
+
+# Bind the keys
+bind '"\ea": "\C-u_nav_dirs_wrapper back\C-m"'
+bind '"\ed": "\C-u_nav_dirs_wrapper forward\C-m"'
