@@ -588,8 +588,7 @@ nav_dirs() {
         "back")
             if [ "$PWD" != "/" ]; then
                 forward_stack+=("$current_dir")
-                cd ..
-                pwd
+                cd .. > /dev/null
             fi
             ;;
             
@@ -597,13 +596,12 @@ nav_dirs() {
             if [ ${#forward_stack[@]} -gt 0 ]; then
                 local next_dir="${forward_stack[-1]}"
                 unset 'forward_stack[-1]'
-                cd "$next_dir"
-                pwd
+                cd "$next_dir" > /dev/null
             fi
             ;;
     esac
 }
 
 # Bind the keys
-bind '"\ea": "\C-unav_dirs back\C-m"'
-bind '"\ed": "\C-unav_dirs forward\C-m"'
+bind '"\ea": "\C-unav_dirs back >/dev/null\C-m"'
+bind '"\ed": "\C-unav_dirs forward >/dev/null\C-m"'
