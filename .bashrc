@@ -626,8 +626,11 @@ force_prompt_redraw() {
     READLINE_LINE=""
     READLINE_POINT=0
     
-    # Force bash to redraw the prompt
-    bind "redraw-current-line"
+    # Move cursor to start of line and clear line
+    printf '\r\033[0K'
+    
+    # Force prompt redraw by sending SIGWINCH to bash
+    kill -SIGWINCH $$
 }
 
 
