@@ -102,9 +102,9 @@ bind '"\er": "fzfm\n"'
 bind '"\eq": "sc\n"'
 
 
-bind '"\ea": "cd ..\n"'
+# bind '"\ea": "cd ..\n"'
 
-bind '"\ed": "cd - \n"'
+# bind '"\ed": "cd - \n"'
 
 
 
@@ -621,5 +621,8 @@ nav_dirs() {
 }
 
 # Bind the keys using bind -x
-bind -x '"\ea": nav_dirs back \C-m'
-bind -x '"\ed": nav_dirs forward \C-m'
+bind '"\201": nav_dirs back'
+bind '"\205": nav_dirs forward'
+
+bind '"\ea":"\201\C-m"'
+bind '"\ed":"\205\C-m"'
