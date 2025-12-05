@@ -579,10 +579,16 @@ ctrl-a:change-query()"
 declare -a forward_stack=()
 declare -a backward_stack=()
 
+# Flag to suppress prompt
+SUPPRESS_PROMPT=0
+
 # Main navigation function
 nav_dirs() {
     local direction=$1
     local current_dir=$(pwd)
+    
+    # Set flag to suppress next prompt
+    SUPPRESS_PROMPT=1
     
     case $direction in
         "back")
@@ -600,19 +606,20 @@ nav_dirs() {
             fi
             ;;
     esac
+    
+    # Clear line and print prompt
+    echo -en "\r\033[K$PS1"
 }
 
-# Create wrapper functions that clear the line
-nav_back() {
-    echo -en "\r\033[K"  # Clear current line
-    nav_dirs back
+# Add to your PROMPT_COMMAND
+prompt_func() {
+    if [ $SUPPRESS_PROMPT -eq 1 ]; then
+        SUPPRESS_PROMPT=0
+        return
+    fi
 }
+PROMPT_COMMAND="prompt_func; $PROMPT_COMMAND"
 
-nav_forward() {
-    echo -en "\r\033[K"  # Clear current line
-    nav_dirs forward
-}
-
-# Bind the keys to wrapper functions
-bind '"\ea": "\C-unav_back\C-m"'
-bind '"\ed": "\C-unav_forward\C-m"'
+# Bind the keys
+bind '"\ea": "\C-unav_dirs back\C-m"'
+bind '"\ed": "\C-unav_dirs forward\C-m"'
