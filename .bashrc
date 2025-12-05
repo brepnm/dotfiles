@@ -604,7 +604,7 @@ nav_dirs() {
 
 
 bind -x '"\201": nav_dirs back'
-bind '"\ea":"\201\C-m"'
+bind -x '"\ea":"\201\C-m"'
 
 bind -x '"\205": nav_dirs forward'
-bind '"\ed":"\205\C-m"'
+bind -x '"\ed":"\205\C-m"'
