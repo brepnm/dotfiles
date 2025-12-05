@@ -50,16 +50,16 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='$(whoami):${PWD/*\//}#'. 
+    PS1='$PWD: '
 else
-    PS1='$(whoami):${PWD/*\//}#'. 
+    PS1='$PWD: '
 fi
 unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm*|rxvt*)
-    PS1='$(whoami):${PWD/*\//}#'. 
+    PS1='$PWD: '
     ;;
 *)
     ;;
