@@ -597,7 +597,6 @@ go_up_and_record() {
     push_forward
     cd .. || return
 
-    force_prompt_redraw
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -616,20 +615,27 @@ go_forward() {
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
-        force_prompt_redraw
     fi
 }
 
 
-force_prompt_redraw() {
-    # clear current editing buffer
-    READLINE_LINE=""
-    READLINE_POINT=0
-    
-    # Force bash to redraw the prompt
-    bind 'redraw-current-line' > /dev/null 2>&1
-}
+animation() {
+S="\033[s"
+U="\033[u"
 
+POS="\033[1000D\033[2C"
+while [ : ]
+do
+    eval echo -ne '${S}${POS}\>\ \ ${U}'
+    sleep 0.3
+    eval echo -ne '${S}${POS}\ \>\ ${U}'
+    sleep 0.3
+    eval echo -ne '${S}${POS}\ \ \>${U}'
+    sleep 0.3
+done
+}
+PS1='[     ] : [ \u @ \h ] > '
+animation &
 
 # ---- Readline keybindings ----
 # Alt-a
