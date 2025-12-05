@@ -596,6 +596,7 @@ go_up_and_record() {
 
     push_forward
     cd .. || return
+    animation &
 
 }
 
@@ -614,6 +615,7 @@ go_forward() {
         cd "$target" || return
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
+        animation &
 
     fi
 }
