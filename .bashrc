@@ -596,7 +596,7 @@ go_up_and_record() {
 
     push_forward
     
-    echo -ne "$pc%\033[0K\r"; cd .. || return
+    $ echo -e "abcdefghijklmnopqrstuvwxyz\r\033[K0123456789"; cd .. || return
 
 }
 
@@ -612,7 +612,7 @@ go_forward() {
     local parent="$(dirname "$PWD")"
 
     if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
-        echo -ne "$pc%\033[0K\r"; cd "$target" || return
+        $ echo -e "abcdefghijklmnopqrstuvwxyz\r\033[K0123456789"; cd "$target" || return
         # pop last entry
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
@@ -620,23 +620,23 @@ go_forward() {
 }
 
 
-animation() {
-S="\033[s"
-U="\033[u"
+# animation() {
+# S="\033[s"
+# U="\033[u"
 
-POS="\033[1000D\033[2C"
-while [ : ]
-do
-    eval echo -ne '${S}${POS}\>\ \ ${U}'
-    sleep 0.3
-    eval echo -ne '${S}${POS}\ \>\ ${U}'
-    sleep 0.3
-    eval echo -ne '${S}${POS}\ \ \>${U}'
-    sleep 0.3
-done
-}
-PS1='[     ]:\u@\h:\w>'
-animation &
+# POS="\033[1000D\033[2C"
+# while [ : ]
+# do
+#     eval echo -ne '${S}${POS}\>\ \ ${U}'
+#     sleep 0.3
+#     eval echo -ne '${S}${POS}\ \>\ ${U}'
+#     sleep 0.3
+#     eval echo -ne '${S}${POS}\ \ \>${U}'
+#     sleep 0.3
+# done
+# }
+# PS1='[     ]:\u@\h:\w>'
+# animation &
 
 # ---- Readline keybindings ----
 # Alt-a
