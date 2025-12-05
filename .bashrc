@@ -622,20 +622,12 @@ go_forward() {
 
 
 force_prompt_redraw() {
-    # clear the Readline editing buffer
+    # clear current editing buffer
     READLINE_LINE=""
     READLINE_POINT=0
-
-    # erase the current terminal line
-    printf '\r\e[2K'
-
-    # run things like updating the title, git prompt logic, etc.
-    if [[ -n "$PROMPT_COMMAND" ]]; then
-        eval "$PROMPT_COMMAND"
-    fi
-
-    # print the prompt properly (interprets escape sequences)
-    printf "%b" "$PS1"
+    
+    # Force bash to redraw the prompt
+    bind "redraw-current-line"
 }
 
 
