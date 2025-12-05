@@ -600,13 +600,8 @@ nav_dirs() {
             fi
             ;;
     esac
-    
-    # Clear line and print clean prompt
-    echo -en "\r\033[K"
-    # Force bash to redraw the prompt
-    kill -WINCH $$
 }
 
-# Bind the keys
-bind '"\ea": "\C-unav_dirs back\C-m"'
-bind '"\ed": "\C-unav_dirs forward\C-m"'
+# Bind the keys using bind -x
+bind -x '"\ea": nav_dirs back'
+bind -x '"\ed": nav_dirs forward'
