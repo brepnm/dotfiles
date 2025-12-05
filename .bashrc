@@ -214,6 +214,23 @@ create_directory() {
 export -f create_directory
 
 
+create_file() {
+    read -p "Enter file name: " file_name
+    
+    #if directory_name exists or is empty, enter while loop until valid name is given
+    while [ -z "$file_name" ] || [ -d "$file_name" ];
+    do
+        echo "Invalid or existing directory name. Please try again."
+        read -p "Enter directory name: " directory_name
+    done
+    
+    mkdir "$file_name"
+    return 1
+}
+export -f create_file
+
+
+
 copy_files_from_temp() {
     local temp_file="/tmp/fzfm_clipboard.txt"
     if [[ -f "$temp_file" ]]; then
@@ -317,6 +334,7 @@ fzfm() {
             --bind "alt-d:accept" \
             --bind "alt-a:change-query(..)+print-query" \
             --bind "ctrl-n:execute(create_directory {})+reload($list_command)" \
+            --bind "ctrl-alt-n:execute(create_file {})+reload($list_command)" \
             --bind "alt-x:execute-silent(gio trash {})+reload($list_command)" \
             --bind "change:top" \
             --bind "ctrl-c:execute(printf '%s\n' {+} | while read -r file; do [[ \$file != '..' && \$file != ':get_path' ]] && echo '$(pwd)/'\$file; done > $temp_file)"+clear-selection \
