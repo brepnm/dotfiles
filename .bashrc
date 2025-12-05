@@ -622,18 +622,20 @@ go_forward() {
 
 
 force_prompt_redraw() {
-    # clear current editing buffer
+    # clear the Readline editing buffer
     READLINE_LINE=""
     READLINE_POINT=0
 
-    # move to start of line, clear it
+    # erase the current terminal line
     printf '\r\e[2K'
 
-    # run PROMPT_COMMAND and print PS1
+    # run things like updating the title, git prompt logic, etc.
     if [[ -n "$PROMPT_COMMAND" ]]; then
         eval "$PROMPT_COMMAND"
     fi
-    printf '%s' "$PS1"
+
+    # print the prompt properly (interprets escape sequences)
+    printf "%b" "$PS1"
 }
 
 
