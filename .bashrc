@@ -618,9 +618,8 @@ nav_dirs() {
             ;;
     esac
 
-    _redraw_prompt
 }
 
 # Bind the keys using bind -x
-bind -x '"\ea": nav_dirs back'
-bind -x '"\ed": nav_dirs forward'
+bind -x '"\ea": nav_dirs back\C-m'
+bind -x '"\ed": nav_dirs forward\C-m'
