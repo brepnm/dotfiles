@@ -104,6 +104,8 @@ bind '"\eq": "sc\n"'
 
 bind '"\ea": "cd ..\n"'
 
+bind '"\ed": "cd - \n"'
+
 
 
 # enable programmable completion features (you don't need to enable
