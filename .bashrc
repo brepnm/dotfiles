@@ -621,5 +621,5 @@ nav_dirs() {
 }
 
 # Bind the keys using bind -x
-bind -x '"\ea": nav_dirs back\C-m'
-bind -x '"\ed": nav_dirs forward\C-m'
+bind -x '"\ea": nav_dirs back \C-m'
+bind -x '"\ed": nav_dirs forward \C-m'
