@@ -602,7 +602,7 @@ go_up_and_record() {
     
     cd ..
 
-    # kill -INT $$; nclr
+    kill -INT $$
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -620,7 +620,7 @@ go_forward() {
         cd "$target"
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
-        # kill -INT $$; nclr
+        kill -INT $$
 
     fi
 }
