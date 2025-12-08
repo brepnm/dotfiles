@@ -602,7 +602,6 @@ go_up_and_record() {
     cd ..
 
     kill -INT $$
-    nclr
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -621,7 +620,6 @@ go_forward() {
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
         kill -INT $$
-        nclr
 
     fi
 }
