@@ -600,6 +600,9 @@ go_up_and_record() {
     push_forward
     
     cd ..
+
+    kill -INT $$
+    nclr
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -617,12 +620,15 @@ go_forward() {
         cd "$target"
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
+        kill -INT $$
+        nclr
+
     fi
 }
 
-bind -x '"\ea":go_up_and_record; kill -INT $$; nclr'
+bind -x '"\ea":go_up_and_record;'
 
-bind -x '"\ed":go_forward; kill -INT $$; nclr'
+bind -x '"\ed":go_forward;'
 
 
 
