@@ -599,12 +599,11 @@ go_up_and_record() {
     fi
 
     push_forward
-    
     cd ..
-
+    
+    trap 'nclr' INT
     kill -INT $$
-    sleep 0.1
-    nclr
+    trap - INT
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -622,9 +621,9 @@ go_forward() {
         cd "$target"
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
+        trap 'nclr' INT
         kill -INT $$
-        sleep 0.1
-        nclr
+        trap - INT
 
     fi
 }
