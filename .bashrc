@@ -625,9 +625,9 @@ go_forward() {
     fi
 }
 
-bind -x '"\ea":go_up_and_record; kill -INT $$; printf "\033[1A\033[2K\033[0G"'
+bind -x '"\ea":go_up_and_record; printf "\033[1A\033[2K\033[0G"'
 
-bind -x '"\ed":go_forward; kill -INT $$; printf "\033[1A\033[2K\033[0G"'
+bind -x '"\ed":go_forward; printf "\033[1A\033[2K\033[0G"'
 
 
 # animation() {
