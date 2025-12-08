@@ -621,6 +621,8 @@ bind -x '"\ea":go_up_and_record; printf '\e[A\e[K'; kill -INT $$""'
 
 bind -x '"\ed":go_forward; printf '\e[A\e[K'; kill -INT $$""'
 
+nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
+
 
 # animation() {
 # S="\033[s"
