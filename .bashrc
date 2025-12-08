@@ -625,10 +625,12 @@ go_forward() {
     fi
 }
 
-bind -x '"\ea":go_up_and_record;'
+# bind -x '"\ea":go_up_and_record;'
 
-bind -x '"\ed":go_forward;'
+# bind -x '"\ed":go_forward;'
 
+
+bind -x '"\ea":"cd ..; kill -INT $$"'
 
 
 # animation() {
