@@ -575,8 +575,8 @@ ctrl-a:change-query()"
 }
 
 
-nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
-export -f nclr
+# nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
+# export -f nclr
 
 
 # ---- forward directory stack ----
@@ -621,12 +621,11 @@ go_forward() {
     fi
 }
 
-# bind -x '"\ea":go_up_and_record; kill -INT $$; printf "\033[1A\033[2K\033[0G"'
+bind -x '"\ea":go_up_and_record; kill -INT $$;"'
 
-# bind -x '"\ed":go_forward; kill -INT $$; printf "\033[1A\033[2K\033[0G"'
+bind -x '"\ed":go_forward; kill -INT $$;"'
 
 
-bind -x '"\ea": "cd .. ; printf "\r\033[K%s%s\r\033[%dC""'
 
 # animation() {
 # S="\033[s"
