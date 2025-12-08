@@ -416,6 +416,9 @@ test() {
     echo "new!"
 }
 
+nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
+export -f nclr
+
 
 reload_dotfiles() {
     cd $HOME/dotfiles
@@ -617,11 +620,10 @@ go_forward() {
     fi
 }
 
-bind -x '"\ea":go_up_and_record; printf '\e[A\e[K'; kill -INT $$""'
+bind -x '"\ea":go_up_and_record; nclr; kill -INT $$""'
 
-bind -x '"\ed":go_forward; printf '\e[A\e[K'; kill -INT $$""'
+bind -x '"\ed":go_forward; nclr; kill -INT $$""'
 
-nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
 
 
 # animation() {
