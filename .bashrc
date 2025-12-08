@@ -617,6 +617,10 @@ go_forward() {
     fi
 }
 
+bind -x '"\ea":go_up_and_record; printf "\r""'
+
+bind -x '"\ed":go_forward; printf "\r""'
+
 
 # animation() {
 # S="\033[s"
@@ -638,6 +642,6 @@ go_forward() {
 
 # ---- Readline keybindings ----
 # Alt-a
-bind -x '"\ea":go_up_and_record; kill -INT $$""'
+
 # Alt-d
-bind -x '"\ed":go_forward; kill -INT $$""'
+
