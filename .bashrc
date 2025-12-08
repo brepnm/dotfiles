@@ -620,9 +620,9 @@ go_forward() {
     fi
 }
 
-bind -x '"\ea":go_up_and_record; nclr; kill -INT $$""'
+bind -x '"\ea":go_up_and_record; kill -INT $$""'
 
-bind -x '"\ed":go_forward; nclr; kill -INT $$""'
+bind -x '"\ed":go_forward; kill -INT $$""'
 
 
 
