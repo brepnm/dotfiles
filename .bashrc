@@ -597,8 +597,8 @@ go_up_and_record() {
     push_forward
     
     cd ..
-    printf '\033[K'
-    echo "[←] Moved up to: $PWD"
+    # printf '\033[K'
+    # echo "[←] Moved up to: $PWD"
 
 }
 
@@ -615,8 +615,8 @@ go_forward() {
 
     if [[ "$target" == $parent* ]] && (( ${#target} > ${#current} )); then
         cd "$target"
-        printf '\033[K'
-        echo "[→] Moved forward to: $target"
+        # printf '\033[K'
+        # echo "[→] Moved forward to: $target"
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
     fi
