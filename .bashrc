@@ -625,12 +625,9 @@ go_forward() {
     fi
 }
 
-# bind -x '"\ea":go_up_and_record;'
+bind -x '"\ea":go_up_and_record 2>/dev/null; tput cuu1; tput el; kill -INT $$'
 
-# bind -x '"\ed":go_forward;'
-
-
-bind -x '"\ea":"cd .. 2>/dev/null; tput cuu1; tput el; kill -INT $$"'
+bind -x '"\ed":go_forward 2>/dev/null; tput cuu1; tput el; kill -INT $$'
 
 
 # animation() {
