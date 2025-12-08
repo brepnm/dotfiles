@@ -626,7 +626,7 @@ go_forward() {
 # bind -x '"\ed":go_forward; kill -INT $$; printf "\033[1A\033[2K\033[0G"'
 
 
-bind -x '"\ea": "cd .. > /dev/null 2>&1 && PS1=$PS1 && printf \"\e[2K\r$PS1\$(pwd)> \""'
+bind -x '"\ea": "cd .. ; printf "\r\033[K%s%s\r\033[%dC""'
 
 # animation() {
 # S="\033[s"
