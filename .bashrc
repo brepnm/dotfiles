@@ -416,9 +416,6 @@ test() {
     echo "new!"
 }
 
-nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
-export -f nclr
-
 
 reload_dotfiles() {
     cd $HOME/dotfiles
@@ -578,6 +575,10 @@ ctrl-a:change-query()"
 }
 
 
+nclr () { local j; for ((j = 0; j <= "${1:-1}"; j++ )); do tput cuu1; done; tput ed; }
+export -f nclr
+
+
 # ---- forward directory stack ----
 forward_stack=()
 
@@ -601,7 +602,9 @@ go_up_and_record() {
     
     cd ..
 
-    kill -INT $$; nclr
+    kill -INT $$
+    sleep 0.1
+    nclr
 }
 
 # Alt+d = go forward (if deeper path exists)
@@ -619,7 +622,9 @@ go_forward() {
         cd "$target"
         forward_stack=("${forward_stack[@]:0:$((n-1))}")
 
-        kill -INT $$; nclr
+        kill -INT $$
+        sleep 0.1
+        nclr
 
     fi
 }
