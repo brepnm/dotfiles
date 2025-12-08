@@ -617,9 +617,9 @@ go_forward() {
     fi
 }
 
-bind -x '"\ea":go_up_and_record; kill -INT $$""'
+bind -x '"\ea":go_up_and_record; printf '\e[A\e[K'; kill -INT $$""'
 
-bind -x '"\ed":go_forward; kill -INT $$""'
+bind -x '"\ed":go_forward; printf '\e[A\e[K'; kill -INT $$""'
 
 
 # animation() {
