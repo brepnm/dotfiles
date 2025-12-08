@@ -643,6 +643,6 @@ go_forward() {
 
 # ---- Readline keybindings ----
 # Alt-a
-bind -x '"\ea":go_up_and_record""'
+bind -x '"\ea":go_up_and_record; kill -INT $$""'
 # Alt-d
-bind -x '"\ed":go_forward""'
+bind -x '"\ed":go_forward; kill -INT $$""'
