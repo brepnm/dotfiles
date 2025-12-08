@@ -630,7 +630,7 @@ go_forward() {
 # bind -x '"\ed":go_forward;'
 
 
-bind -x '"\ea":"cd ..; kill -INT $$;exit"'
+bind -x '"\ea":"cd .."'
 
 
 # animation() {
