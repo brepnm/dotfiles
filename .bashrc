@@ -643,6 +643,6 @@ go_forward() {
 
 # ---- Readline keybindings ----
 # Alt-a
-bind -x '"\ea":go_up_and_record; echo ""'
+bind -x '"\ea":go_up_and_record; printf "\033[K" ""'
 # Alt-d
-bind -x '"\ed":go_forward; echo ""'
+bind -x '"\ed":go_forward; printf "\033[K" ""'
