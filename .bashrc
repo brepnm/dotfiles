@@ -379,7 +379,11 @@ fzfm() {
             previous_dir_name="$(basename "$(pwd)")"
             cd .. || break
             moving_back=true
-
+        # check if selection is multi-line
+        elif [[ "$selection" == *"$'\n'"* ]]; then
+            echo "$selection"
+            break
+            
         elif [[ "$selection" == "sc" ]]; then
             sc
             break
