@@ -127,6 +127,10 @@ show_connection_info() {
 }
 
 main() {
+    
+    sudo ufw allow 10000/tcp
+    sudo ufw reload
+
     require_root
     install_dependencies
     install_xray
