@@ -12,7 +12,7 @@ set -euo pipefail
 ############################################
 
 XRAY_CONFIG="/usr/local/etc/xray/config.json"
-XRAY_PORT="443"
+XRAY_PORT="10000"
 XRAY_FLOW="xtls-rprx-vision"
 XRAY_SNI="www.cloudflare.com"
 XRAY_SHORT_ID="$(openssl rand -hex 8)"
