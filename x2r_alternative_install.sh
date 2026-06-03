@@ -77,8 +77,9 @@ generate_keys() {
 
     KEY_OUTPUT=$(xray x25519)
 
-    PRIVATE_KEY=$(echo "$KEY_OUTPUT" | awk '/Private key:/ {print $3}')
-    PUBLIC_KEY=$(echo "$KEY_OUTPUT" | awk '/Public key:/ {print $3}')
+    PRIVATE_KEY=$(echo "$KEY_OUTPUT" | sed -n 's/^PrivateKey:[[:space:]]*//p')
+    PUBLIC_KEY=$(echo "$KEY_OUTPUT" | sed -n 's/^Password (PublicKey):[[:space:]]*//p')
+    HASH32=$(echo "$KEY_OUTPUT" | sed -n 's/^Hash32:[[:space:]]*//p')
 
     if [[ -z "$PRIVATE_KEY" || -z "$PUBLIC_KEY" ]]; then
         error "Failed to generate REALITY keys"
